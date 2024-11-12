@@ -1,0 +1,1 @@
+DATA_SENT = "Data sent successfully!"
