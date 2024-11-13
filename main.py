@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from common_response import common_response 
 #import success message from common success message file
 from common_success_message import (
-    DATA_SENT
+    DATA_SENT,
+    BLOG_CREATED,
 )
 
 #import sample dummy data 
@@ -64,6 +65,12 @@ def unpublished_blogs():
         {"author":"Neha Sharma","blog_title":"Intel","blog_content":"Some sample text","created_by":"","created_at":"","status":"Unpublished"},
     ]
     return common_response(status_code=200,message=DATA_SENT,data=data)
+
+from model import BlogModel
+@app.post('/blog/create-blog/')
+def create_blog(blog:BlogModel):
+    print(blog)
+    return common_response(status_code=201,message=BLOG_CREATED)
 
 @app.get("/blog/blog-detail/{blog_id}")
 def blog_detail(blog_id):

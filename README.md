@@ -21,7 +21,7 @@ Install the server for fastapi <br>
 ```
 pip install uvicorn
 ```
-## Sample code in FastAPI
+## Sample code in FastAPI [GET]
 The code below is a sample code of FastAPI.
 ```
 from fastapi import FastAPI
@@ -342,3 +342,33 @@ In case of path parameter we have to specify the path parameter in the url in th
 def index(limit:int=5,publish: Optional[bool]=None):
 ```
 In case of query parameter we don't specify anything in the url in the decorator
+
+## Request body [POST , PATCH]
+The sample code below shows how post method works in FasAPI
+##### model.py
+```
+from pydantic import BaseModel
+from typing import Optional
+
+class BlogModel(BaseModel):
+    title:str
+    body:str
+    published_at :Optional[bool] = None
+
+```
+**Explaination** : <br>
+- ```from pydantic import BaseModel```: This imports the BaseModel class from Pydantic. BaseModel is the core class in Pydantic used to create data models with built-in data validation
+- ```from typing import Optional```: This imports Optional from Python's typing module. Optional is used to indicate that a variable or attribute can have a value or be None
+- ```class BlogModel(BaseModel)```: This creates a new class BlogModel that inherits from BaseModel, making it a Pydantic model. 
+    - A **Pydantic** model is a Python class derived from the BaseModel class provided by the Pydantic library. Pydantic models are primarily used for data validation and serialization. They allow you to define data structures with specific fields and types, and they automatically validate the data assigned to each field. This makes Pydantic models especially useful for applications that require robust data handling, such as APIs and data processing scripts.
+- ```title: str```: This declares a field called title that must be a string. Pydantic will enforce that the value assigned to title is always a string.
+- ```published_at: Optional[bool] = None```: This defines an optional field called published_at, which can be either a bool (True or False) or None. The = None default means that if no value is provided for published_at, it will default to None.
+
+#### main.py
+```
+from model import BlogModel
+@app.post('/blog/create-blog/')
+def create_blog(blog:BlogModel):
+    print(blog)
+    return common_response(status_code=201,message=BLOG_CREATED)
+```
