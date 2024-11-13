@@ -101,3 +101,9 @@ def blog_comments(blog_id : int):
         return common_response(status_code=200,message=DATA_SENT,data=data)
     except Exception as e:
         return common_response(status_code=400,error=str(e))
+
+# Change the port number of the FasAPI server
+#use python3 main.py instead of uvicorn main:app --reload so that the code below can take effect
+import uvicorn
+if __name__ == "__main__":
+    uvicorn.run(app,host="127.0.0.1",port=8001)

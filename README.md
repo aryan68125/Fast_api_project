@@ -372,3 +372,13 @@ def create_blog(blog:BlogModel):
     print(blog)
     return common_response(status_code=201,message=BLOG_CREATED)
 ```
+
+## Change the port of the FastAPI server 
+Add the code below at the last after you have added all of you api end-points in your ```main.py``` file.
+```
+import uvicorn
+if __name__ == "__main__":
+    uvicorn.run(app,host="127.0.0.1",port=8001)
+```
+**NOTE** : The command ```uvicorn main:app --reload``` will run the server in its default port i.e 8000
+If you want the changes made by the above code to take effect and start the server in the port that you defined in main.py file as shown above then use this command to do so ```python3 main.py```
