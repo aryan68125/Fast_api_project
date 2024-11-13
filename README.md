@@ -276,5 +276,6 @@ def index(limit:int,publish: bool):
     if publish == False:
         filtered_data = [blog for blog in dummy_data if blog["publish"] == False]
         data = filtered_data[:limit]
-        return common_response(status_code=200,message=DATA_SENT,data=data)
+        return common_response(status_code=200,message=DATA_SENT,data=data).
 ```
+
