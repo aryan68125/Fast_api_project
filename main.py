@@ -38,9 +38,10 @@ def index(limit:int):
     data = dummy_data[:limit]
     return common_response(status_code=200,message=DATA_SENT,data=data)
 
+from typing import Optional
 #example of query parameter
 @app.get("/blog/blog-list-v2-publish/")
-def index(limit:int,publish: bool):
+def index(limit:int=5,publish: Optional[bool]=None):
     # only get blogs <= to the limit that is accepted from the front-end
     if publish == True:
         filtered_data = [blog for blog in dummy_data if blog["publish"] == True]
@@ -52,6 +53,9 @@ def index(limit:int,publish: bool):
         filtered_data = [blog for blog in dummy_data if blog["publish"] == False]
         data = filtered_data[:limit]
         return common_response(status_code=200,message=DATA_SENT,data=data)
+    
+    data = dummy_data[:limit]
+    return common_response(status_code=200,message=DATA_SENT,data=data)
 
 @app.get("/blog/blog-unpublished/")
 def unpublished_blogs():

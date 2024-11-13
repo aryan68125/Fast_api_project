@@ -193,6 +193,26 @@ Then in this case FastAPI will throw and error saying that the blog_id is of the
 
 **Note** : We need to put all the dynamic routes must come after all the static routes are written
 
+## path parameter in fastAPI
+A path parameter in fast api works in the same way as dynamic urls in django and django DRF.
+The code below is a demo of a path parameter
+```
+@app.get("/blog/blog-detail/{blog_id}")
+def blog_detail(blog_id:int):
+    try:
+        data_list = [
+            {"author":"Aditya Kumar","blog_title":"Intel","blog_content":"Some sample text","created_by":"","created_at":""},
+            {"author":"Aastha Rajpurohit","blog_title":"Intel","blog_content":"Some sample text","created_by":"","created_at":""},
+            {"author":"Vaibhav Tailor","blog_title":"Intel","blog_content":"Some sample text","created_by":"","created_at":""},
+            {"author":"Neha Sharma","blog_title":"Intel","blog_content":"Some sample text","created_by":"","created_at":""},
+        ]
+        print(blog_id)
+        data = data_list[int(blog_id)]
+        return common_response(status_code=200,message=DATA_SENT,data=data)
+    except Exception as e:
+        return common_response(status_code=400,error=str(e))
+```
+
 ## query parameter in fastAPI
 The example of how a query parameter may look like 
 
@@ -278,4 +298,47 @@ def index(limit:int,publish: bool):
         data = filtered_data[:limit]
         return common_response(status_code=200,message=DATA_SENT,data=data).
 ```
+You can also provide a default value for limit and publish if you should so desire.
+eaxmple sample code : 
+```
+def index(limit:int=5,publish: bool=True):
+```
+Now if nothing is provided from the front-end then the default value as shown above will be supplied.
 
+#### Make your query optional
+Make your query optional by using Optional after importing it from the library like this ``` from typing import Optional ```
+```
+from typing import Optional
+#example of query parameter
+@app.get("/blog/blog-list-v2-publish/")
+def index(limit:int=5,publish: Optional[bool]=None):
+    # only get blogs <= to the limit that is accepted from the front-end
+    if publish == True:
+        filtered_data = [blog for blog in dummy_data if blog["publish"] == True]
+
+        # Only return the filtered data up to the requested limit
+        data = filtered_data[:limit]
+        return common_response(status_code=200,message=DATA_SENT,data=data)
+    if publish == False:
+        filtered_data = [blog for blog in dummy_data if blog["publish"] == False]
+        data = filtered_data[:limit]
+        return common_response(status_code=200,message=DATA_SENT,data=data)
+    
+    data = dummy_data[:limit]
+    return common_response(status_code=200,message=DATA_SENT,data=data)
+```
+Here ``` publish: Optional[bool]=None ``` will set the query publish into an optional query which when not supplied will cause an api-endpoint to default to its default behaviour.
+
+## NOTE : FastAPI can differentiate between path parameters and query parameters
+- **Path Parameter** :
+```
+@app.get("/blog/blog-detail/{blog_id}")
+def blog_detail(blog_id:int):
+```
+In case of path parameter we have to specify the path parameter in the url in the decorater like this ```@app.get('/url/{path_parameter}/')```
+- **Query Parameter** : 
+``` 
+@app.get("/blog/blog-list-v2-publish/")
+def index(limit:int=5,publish: Optional[bool]=None):
+```
+In case of query parameter we don't specify anything in the url in the decorator
