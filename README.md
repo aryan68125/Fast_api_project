@@ -48,6 +48,49 @@ This folder holds the code that demonstrates
 #### fast_api_intermediate
 - Pydantic Schemas
 
+## Some common Problems and their solutions (Troubleshooting)
+#### Module not found error when running server in FastAPI
+My code in main.py file looks like this
+```
+from fastapi import FastAPI
+
+# Utility related imports
+# import common response from utility
+from utility.common_response import common_response
+#importing common success message
+from utility.common_success_message import (
+    DATA_SENT,
+)
+
+app = FastAPI()
+
+@app.get("/")
+def index():
+    data = "This endpoint is the entry point for the apis in the intermediate section."
+    return common_response(status_code=200,message=DATA_SENT,data=data)
+```
+The Directory structrue in the project
+```
+fast_api_intermediate/
+├── blog/
+│   ├── __init__.py  # (This makes blog a package)
+│   ├── main.py      # FastAPI app
+├── utility/
+│   ├── __init__.py  # (This makes utility a package)
+│   ├── common_response.py
+│   └── common_success_message.py
+
+```
+If you have the directory structure that looks somthing like what is shown above then you can't use this command ```uvicorn main:app --reload``` to run your fastAPI server. 
+<br>
+If you use this command then you will get the error that looks something like this 
+```
+  File "/home/aditya/github/Fast_api_project/fast_api_intermediate/blog/main.py", line 5, in <module>
+    from utility.common_response import common_response
+ModuleNotFoundError: No module named 'utility'
+```
+You need to get one level out of your blog folder if you are inside of it and run this command instead ``` uvicorn blog.main:app --reload ``` to run your FastAPI server. This tells uvicorn to treat blog.main as a module in the blog package, and Python can then resolve the relative imports properly. Hence resolving the issue.
+
 ## Sample code in FastAPI [GET]
 The code below is a sample code of FastAPI.
 ```
