@@ -530,3 +530,50 @@ def create_blog(blog:BlogModel):
     return common_response(status_code=201,message=BLOG_CREATED)
 ```
 **NOTE** : Use ```uvicorn blog.main:app --reload``` when you are in the ```./fast_api_intermediate``` directory.
+#### Connect with the SQLite Database
+In order to connect to the database in FastAPI you need SQLAlchemy. <br>
+**SQLAlchemy** is the Python SQL toolkit and Object Relational Mapper that gives application developers the full power and flexibility of SQL.
+It provides a full suite of well known enterprise-level persistence patterns, designed for efficient and high-performing database access, adapted into a simple and Pythonic domain language.
+
+- First you need to create a file called ```database.py``` .
+    - After creating ```database.py``` file the project structure will look something like this: 
+        ```
+            fast_api_intermediate
+        ├── blog
+        │   ├── __init__.py
+        │   ├── main.py
+        │   ├── models.py
+        │   └── __pycache__
+        │       ├── __init__.cpython-312.pyc
+        │       ├── main.cpython-312.pyc
+        │       └── models.cpython-312.pyc
+        ├── database.py
+        ├── __pycache__
+        │   └── main.cpython-312.pyc
+        └── utility
+            ├── common_error_message.py
+            ├── common_response.py
+            ├── common_success_message.py
+            ├── __init__.py
+            ├── __pycache__
+            │   ├── common_response.cpython-312.pyc
+            │   ├── common_success_message.cpython-312.pyc
+            │   └── __init__.cpython-312.pyc
+            ├── validation_regex_patterns.py
+            └── validations.py
+        ```
+    - Add the code below in ```database.py``` file
+    The start of any **SQLAlchemy** **application** is an object called the **Engine**. This object acts as a central source of connections to a particular database, providing both a factory as well as a holding space called a **connection** **pool** for these database connections. The engine is typically a global object created just once for a particular database server, and is configured using a URL string which will describe how it should connect to the database host or backend.
+
+        ```
+        from sqlalchemy import create_engine
+        engine = create_engine("sqlite+pysqlite:///:memory:", echo=True)
+        ```
+
+        **Explaination** : <br>
+        The main argument to ```create_engine``` is a string URL, above passed as the string ```sqlite+pysqlite:///:memory:```. This string indicates to the Engine three important facts:
+        - What kind of database are we communicating with? This is the sqlite portion above, which links in SQLAlchemy to an object known as the **dialect**.
+            - **dialect** : In SQLAlchemy, the “dialect” is a Python object that represents information and methods that allow database operations to proceed on a particular kind of database backend and a particular kind of Python driver (or DBAPI) for that database. SQLAlchemy dialects are subclasses of the Dialect class.
+        - What **DBAPI** are we using? The Python **DBAPI** is a third party driver that SQLAlchemy uses to interact with a particular database. In this case, we’re using the name pysqlite, which in modern Python use is the sqlite3 standard library interface for SQLite. If omitted, SQLAlchemy will use a default **DBAPI** for the particular database selected.
+            - **DBAPI** is shorthand for the phrase “Python Database API Specification”. This is a widely used specification within Python to define common usage patterns for all database connection packages. The DBAPI is a “low level” API which is typically the lowest level system used in a Python application to talk to a database. SQLAlchemy’s dialect system is constructed around the operation of the DBAPI, providing individual dialect classes which service a specific DBAPI on top of a specific database engine; for example, the create_engine() URL ```postgresql+psycopg2://@localhost/test``` refers to the psycopg2 DBAPI/dialect combination, whereas the URL ```mysql+mysqldb://@localhost/test``` refers to the MySQL for Python DBAPI/dialect combination
+        - How do we locate the database? In this case, our URL includes the phrase ```/:memory:```, which is an indicator to the sqlite3 module that we will be using an in-memory-only database. This kind of database is perfect for experimenting as it does not require any server nor does it need to create new files.
