@@ -1,2 +1,7 @@
 from sqlalchemy import create_engine
-engine = create_engine("sqlite+pysqlite:///:memory:", echo=True)
+
+SQLALCHAMY_DATABASE_URL = "sqlite+pysqlite:///./blog.db"
+
+connect_args = {"check_same_thread": False}
+
+engine = create_engine(sqlite_url, connect_args=connect_args)
