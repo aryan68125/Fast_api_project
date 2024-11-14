@@ -21,14 +21,10 @@ Install the server for fastapi <br>
 ```
 pip install uvicorn
 ```
-<br>
-
 Install FastAPI ORM sqlmodel
-
 <br>
-
-```
-pip install sqlmodel
+``` 
+pip install sqlmodel 
 ```
 
 ## Direcotry structure
