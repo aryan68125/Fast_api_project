@@ -21,6 +21,37 @@ Install the server for fastapi <br>
 ```
 pip install uvicorn
 ```
+<br>
+
+Install FastAPI ORM sqlmodel
+
+<br>
+
+```
+pip install sqlmodel
+```
+
+## Direcotry structure
+#### fast_api_beginner folder
+This folder holds the code that demonstrates
+- How to use [GET] method
+    - Imports and FastAPI Initialization
+        - Creating an Instance of FastAPI
+    - Defining the index Route
+        - path parameter in fastAPI
+        - query parameter in fastAPI
+            - Accepting a single query
+            - Multiple query chaining example
+            - Make your query optional
+        - FastAPI can differentiate between path parameters and query parameters
+- Request body [POST , PATCH]
+    - model.py
+    - main.py
+- Change the port of the FastAPI server
+
+#### fast_api_intermediate
+- Pydantic Schemas
+
 ## Sample code in FastAPI [GET]
 The code below is a sample code of FastAPI.
 ```
