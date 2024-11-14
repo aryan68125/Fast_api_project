@@ -382,3 +382,18 @@ if __name__ == "__main__":
 ```
 **NOTE** : The command ```uvicorn main:app --reload``` will run the server in its default port i.e 8000
 If you want the changes made by the above code to take effect and start the server in the port that you defined in main.py file as shown above then use this command to do so ```python3 main.py```
+
+## Pydantic Schemas
+SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
+
+<br>
+
+**Object-relational mapping (ORM)** is a way to align programming code with database structures. ORM uses metadata descriptors to create a layer between the programming language and a relational database. It thus connects object-oriented program (OOP) code with the database and simplifies the interaction between relational databases and OOP languages. 
+
+<br>
+
+In FastAPI we use sqlmodel ORM to communicate with the Database and the way to install it in  your virtual env is as shown below: 
+<br>
+```
+pip install sqlmodel
+```
