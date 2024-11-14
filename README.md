@@ -606,4 +606,4 @@ It provides a full suite of well known enterprise-level persistence patterns, de
     ```
     
     Some important links that you can use for reference <br>
-    [SQLAlchamy_reference_to_setup_db_connection](doc:https://docs.sqlalchemy.org/en/20/tutorial/engine.html#tutorial-engine)
+    <a href="https://docs.sqlalchemy.org/en/20/tutorial/engine.html#tutorial-engine" target="_blank">SQLAlchamy reference for setting up the database connection in FastAPI</a>
