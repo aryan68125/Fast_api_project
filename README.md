@@ -71,15 +71,28 @@ def index():
 ```
 The Directory structrue in the project
 ```
-fast_api_intermediate/
-├── blog/
-│   ├── __init__.py  # (This makes blog a package)
-│   ├── main.py      # FastAPI app
-├── utility/
-│   ├── __init__.py  # (This makes utility a package)
-│   ├── common_response.py
-│   └── common_success_message.py
-
+fast_api_intermediate
+├── blog
+│   ├── __init__.py
+│   ├── main.py
+│   ├── models.py
+│   └── __pycache__
+│       ├── __init__.cpython-312.pyc
+│       ├── main.cpython-312.pyc
+│       └── models.cpython-312.pyc
+├── __pycache__
+│   └── main.cpython-312.pyc
+└── utility
+    ├── common_error_message.py
+    ├── common_response.py
+    ├── common_success_message.py
+    ├── __init__.py
+    ├── __pycache__
+    │   ├── common_response.cpython-312.pyc
+    │   ├── common_success_message.cpython-312.pyc
+    │   └── __init__.cpython-312.pyc
+    ├── validation_regex_patterns.py
+    └── validations.py
 ```
 If you have the directory structure that looks somthing like what is shown above then you can't use this command ```uvicorn main:app --reload``` to run your fastAPI server. 
 <br>
@@ -413,36 +426,6 @@ def index(limit:int=5,publish: Optional[bool]=None):
 ```
 In case of query parameter we don't specify anything in the url in the decorator
 
-## Request body [POST , PATCH]
-The sample code below shows how post method works in FasAPI
-##### model.py
-```
-from pydantic import BaseModel
-from typing import Optional
-
-class BlogModel(BaseModel):
-    title:str
-    body:str
-    published_at :Optional[bool] = None
-
-```
-**Explaination** : <br>
-- ```from pydantic import BaseModel```: This imports the BaseModel class from Pydantic. BaseModel is the core class in Pydantic used to create data models with built-in data validation
-- ```from typing import Optional```: This imports Optional from Python's typing module. Optional is used to indicate that a variable or attribute can have a value or be None
-- ```class BlogModel(BaseModel)```: This creates a new class BlogModel that inherits from BaseModel, making it a Pydantic model. 
-    - A **Pydantic** model is a Python class derived from the BaseModel class provided by the Pydantic library. Pydantic models are primarily used for data validation and serialization. They allow you to define data structures with specific fields and types, and they automatically validate the data assigned to each field. This makes Pydantic models especially useful for applications that require robust data handling, such as APIs and data processing scripts.
-- ```title: str```: This declares a field called title that must be a string. Pydantic will enforce that the value assigned to title is always a string.
-- ```published_at: Optional[bool] = None```: This defines an optional field called published_at, which can be either a bool (True or False) or None. The = None default means that if no value is provided for published_at, it will default to None.
-
-#### main.py
-```
-from model import BlogModel
-@app.post('/blog/create-blog/')
-def create_blog(blog:BlogModel):
-    print(blog)
-    return common_response(status_code=201,message=BLOG_CREATED)
-```
-
 ## Change the port of the FastAPI server 
 Add the code below at the last after you have added all of you api end-points in your ```main.py``` file.
 ```
@@ -453,7 +436,7 @@ if __name__ == "__main__":
 **NOTE** : The command ```uvicorn main:app --reload``` will run the server in its default port i.e 8000
 If you want the changes made by the above code to take effect and start the server in the port that you defined in main.py file as shown above then use this command to do so ```python3 main.py```
 
-## Pydantic Schemas
+## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
 <br>
@@ -467,3 +450,83 @@ In FastAPI we use sqlmodel ORM to communicate with the Database and the way to i
 ```
 pip install sqlmodel
 ```
+
+### Accept the data from the front-end and store it in the Database
+This is the project directory structure
+```
+fast_api_intermediate
+├── blog
+│   ├── __init__.py
+│   ├── main.py
+│   ├── models.py
+│   └── __pycache__
+│       ├── __init__.cpython-312.pyc
+│       ├── main.cpython-312.pyc
+│       └── models.cpython-312.pyc
+├── __pycache__
+│   └── main.cpython-312.pyc
+└── utility
+    ├── common_error_message.py
+    ├── common_response.py
+    ├── common_success_message.py
+    ├── __init__.py
+    ├── __pycache__
+    │   ├── common_response.cpython-312.pyc
+    │   ├── common_success_message.cpython-312.pyc
+    │   └── __init__.cpython-312.pyc
+    ├── validation_regex_patterns.py
+    └── validations.py
+```
+#### blog/models.py
+```
+from pydantic import BaseModel 
+from typing import Optional
+
+#import some additional field types manually that are not defined in FastAPI
+from datetime import datetime, time, timedelta
+
+class BlogModel(BaseModel):
+    title : str
+    body : str
+    created_at : datetime
+    created_by : Optional[int] = None
+    is_deleted : bool = False
+```
+**Explaination** : <br>
+- ```from pydantic import BaseModel```: This imports the BaseModel class from Pydantic. BaseModel is the core class in Pydantic used to create data models with built-in data validation
+- ```from typing import Optional```: This imports Optional from Python's typing module. Optional is used to indicate that a variable or attribute can have a value or be None
+- ```class BlogModel(BaseModel)```: This creates a new class BlogModel that inherits from BaseModel, making it a Pydantic model. 
+    - A **Pydantic** model is a Python class derived from the BaseModel class provided by the Pydantic library. Pydantic models are primarily used for data validation and serialization. They allow you to define data structures with specific fields and types, and they automatically validate the data assigned to each field. This makes Pydantic models especially useful for applications that require robust data handling, such as APIs and data processing scripts.
+- ```title: str```: This declares a field called title that must be a string. Pydantic will enforce that the value assigned to title is always a string.
+- ```published_at: Optional[bool] = None```: This defines an optional field called published_at, which can be either a bool (True or False) or None. The = None default means that if no value is provided for published_at, it will default to None.
+#### blog/main.py
+```
+from fastapi import FastAPI
+
+# Utility related imports
+# import common response from utility
+from utility.common_response import common_response
+#importing common success message
+from utility.common_success_message import (
+    DATA_SENT,
+    BLOG_CREATED,
+)
+
+#Model related imports
+from blog.models import (
+    BlogModel,
+)
+
+app = FastAPI()
+
+@app.get("/")
+def index():
+    data = "This endpoint is the entry point for the apis in the intermediate section."
+    return common_response(status_code=200,message=DATA_SENT,data=data)
+
+@app.post("/blog/create-blog/")
+def create_blog(blog:BlogModel):
+    print(f"Data from the front-end ---> {blog}")
+    return common_response(status_code=201,message=BLOG_CREATED)
+```
+**NOTE** : Use ```uvicorn blog.main:app --reload``` when you are in the ```./fast_api_intermediate``` directory.
