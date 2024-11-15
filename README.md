@@ -597,13 +597,114 @@ It provides a full suite of well known enterprise-level persistence patterns, de
     
     ```
     from sqlalchemy import create_engine
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker, relationship
 
     SQLALCHAMY_DATABASE_URL = "sqlite+pysqlite:///./blog.db"
 
     connect_args = {"check_same_thread": False}
 
-    engine = create_engine(sqlite_url, connect_args=connect_args)
+    engine = create_engine(SQLALCHAMY_DATABASE_URL, connect_args=connect_args)
+
+    SessionLocal = sessionmaker(bind=engine,autoflush=False,autocommit=False)
+
+    Base = declarative_base()
     ```
-    
+    **Explaination** : <br>
+    This code sets up a basic configuration for using SQLAlchemy with a SQLite database in a Python project. Let’s break down each part and its purpose:
+
+    1. **Importing SQLAlchemy Modules**:
+    ```python
+    from sqlalchemy import create_engine
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker, relationship
+    ```
+    - `create_engine`: This function is used to create a connection to the database.
+    - `declarative_base`: Provides a base class for declarative class definitions. This is where models (tables) inherit from to be mapped to the database.
+    - `sessionmaker`: A factory for creating new SQLAlchemy session objects, which allow interaction with the database.
+    - `relationship`: Used to define relationships between tables, like foreign keys, which can link tables.
+
+    2. **Database URL and Connection Arguments**:
+    ```python
+    SQLALCHAMY_DATABASE_URL = "sqlite+pysqlite:///./blog.db"
+    connect_args = {"check_same_thread": False}
+    ```
+    - `SQLALCHAMY_DATABASE_URL`: Specifies the URL for the database connection. In this case, it’s a local SQLite database file named `blog.db`.
+    - `connect_args`: Arguments passed to the SQLite database engine. Setting `check_same_thread` to `False` is necessary for SQLite to allow multiple threads to use the same connection, which is required for some applications.
+
+    3. **Creating the Engine**:
+    ```python
+    engine = create_engine(SQLALCHAMY_DATABASE_URL, connect_args=connect_args)
+    ```
+    - `engine`: The engine is created using `create_engine()` with the database URL and connection arguments. This `engine` serves as the starting point for any database connection in SQLAlchemy, managing communication between the Python application and the SQLite database.
+
+    4. **Session Factory**:
+    ```python
+    SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    ```
+    - `SessionLocal`: This is a session factory, which provides instances of database sessions to interact with the database. 
+    - `autoflush=False`: Disables automatic flushing of data changes to the database after each query. Instead, changes are only committed when explicitly called.
+    - `autocommit=False`: This setting requires explicit commits on each transaction, giving more control over when data is saved.
+
+    5. **Base Class for ORM Models**:
+    ```python
+    Base = declarative_base()
+    ```
+    - `Base`: The base class for all ORM (Object-Relational Mapping) models. Any table models you create will inherit from `Base`, allowing SQLAlchemy to map Python classes to database tables.
+
+    ### How It All Works Together
+    This setup prepares SQLAlchemy to interact with a SQLite database:
+    - The `engine` creates a connection to the database file.
+    - `SessionLocal` generates sessions, which are used to query and make changes to the database.
+    - `Base` is used to define model classes for each table, allowing you to interact with tables as Python objects.
+
+
     Some important links that you can use for reference <br>
-    <a href="https://docs.sqlalchemy.org/en/20/tutorial/engine.html#tutorial-engine" target="_blank">SQLAlchamy reference for setting up the database connection in FastAPI</a>
+    <a href="https://docs.sqlalchemy.org/en/20/tutorial/engine.html#tutorial-engine" target="_blank">SQLAlchamy : Database connection</a>
+    
+    <a href="https://docs.sqlalchemy.org/en/20/orm/quickstart.html" target="_blank">SQLAlchamy : Declare Models</a>
+
+    <a href="https://fastapi.tiangolo.com/tutorial/sql-databases/?h=database#create-models" target="_blank">FastAPI : Database Connection</a>
+
+    <a href="https://stackoverflow.com/questions/47644739/what-column-type-does-sqlalchemy-use-for-text-on-mysql" target="_blank">SQLAlchamy : what column type does sqlalchamy has for text on mysql</a>
+#### Define SQLModel
+Instead of using Pydantic BaseModel we are going to use ```SQLModel``` here and there is a reason for that because pydantic model is not enough for us to be able to store data in the database when we supply data from the front-end to our api-endpoint. <br>
+SQLModel is an ORM (Object-Relational Mapper) library for Python that combines Pydantic and SQLAlchemy. It allows you to define database models as Python classes, which can then be used to interact with SQL databases. SQLModel is designed to simplify the work involved in creating, reading, updating, and deleting data in databases, while also enabling Pydantic's data validation and serialization features. <br>
+In this code as shown below, SQLModel is used as a base class for the BlogModel, allowing it to act as both a Pydantic model for data validation and a database model. <br>
+models.py file : 
+```
+from datetime import datetime
+from sqlmodel import SQLModel, Field
+
+class BlogModel(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field(index=True)
+    body: str | None = Field(default=None, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)  # Set to current UTC time
+    created_by: int
+```
+**Explaination** : 
+- ```table=True``` Parameter : <br>
+    The ```table=True``` parameter in the BlogModel class marks it as a table in the database. When you set ```table=True```, SQLModel will create a corresponding SQL table for the class when create_all is called on the database engine. If ```table=True``` is omitted, the class will not represent a table, but it can still be used as a data model (like a Pydantic model). <br> <br>
+    What ```table=True``` does: Creates a table in the database.
+    What table itself represents: An attribute of the SQLModel metaclass to determine whether this class is a table model or just a data-only model.
+- ```id: int | None = Field(default=None, primary_key=True)``` : <br>
+    Type: ```int | None``` means that id is an integer but can initially be ```None```. <br> <br>
+    ```default=None```: Initializes id as None until a value is assigned <br> <br>
+    ```primary_key=True```: Sets this field as the primary key of the table, meaning it uniquely identifies each row. <br> <br>
+    By default, primary keys are auto-incremented in SQLModel when using databases that support it (such as SQLite, PostgreSQL, or MySQL). For most SQL databases, primary_key=True will result in auto-increment behavior if default=None is set. Therefore, this field is likely to auto-increment in SQLModel unless the database does not support it.
+- ```created_at: datetime = Field(default_factory=datetime.utcnow)``` <br>
+    This line creates a ```created_at``` field with a datetime type, which stores the date and time when a record is created. Here’s a breakdown: <br>
+    Field(```default_factory=datetime.utcnow```): <br>
+    - ```default_factory=datetime.utcnow```: Calls datetime.utcnow to set the current UTC time as the default value when a new record is created.
+    - This ensures that each new record has an automatic timestamp without needing to be set manually.
+- ```datetime.utcnow:``` : 
+    - ```datetime.utcnow()``` provides the current date and time in UTC (Coordinated Universal Time) instead of the local timezone. This is often preferred in databases for consistency across time zones.
+    - ```default_factory``` allows a callable (like ```datetime.utcnow```) to run each time a new instance of the model is created, so ```created_at``` is always initialized to the exact creation time.
+- Without ```default_factory```:
+    - If ```default_factory``` were omitted, created_at would require an explicit value for each record, meaning you’d have to set the time manually every time a new row is created.
+- ```index=True``` : <br>
+    In SQLModel, index=True on a field (like title or body) tells the database to create an index for that column. <br> <br>
+    An **index** is a database structure that improves the speed of data retrieval operations on that column. When you query for a specific title or body, the database can find the results faster using an **index**. <br> <br>
+    **Use Cases for ```index=True```** : If you frequently search, filter, or sort by a specific field (e.g., title), indexing it can significantly speed up those queries. <br>
+

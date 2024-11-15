@@ -1,13 +1,9 @@
-from pydantic import BaseModel 
-from typing import Optional
+from datetime import datetime
+from sqlmodel import SQLModel, Field
 
-#import some additional field types manually that are not defined in FastAPI
-from datetime import datetime, time, timedelta
-
-class BlogModel(BaseModel):
-    title : str
-    body : str
-    created_at : datetime
-    created_by : Optional[int] = None
-    is_deleted : bool = False
-
+class BlogModel(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field(index=True)
+    body: str | None = Field(default=None, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)  # Set to current UTC time
+    created_by: int
