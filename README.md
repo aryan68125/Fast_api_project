@@ -708,3 +708,15 @@ class BlogModel(SQLModel, table=True):
     An **index** is a database structure that improves the speed of data retrieval operations on that column. When you query for a specific title or body, the database can find the results faster using an **index**. <br> <br>
     **Use Cases for ```index=True```** : If you frequently search, filter, or sort by a specific field (e.g., title), indexing it can significantly speed up those queries. <br>
 
+
+
+
+
+
+
+
+
+
+
+
+
