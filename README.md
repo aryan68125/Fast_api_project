@@ -11,11 +11,11 @@ source venv/bin/activate
 ```
 Install Fast api <br>
 ```
-pip3 install fastapi
+pip3 install fastapi[all]
 ```
 OR you can run the command below to install Fastapi in your system <br>
 ```
-pip3 install fastapi
+pip3 install fastapi[all]
 ```
 Install the server for fastapi <br>
 ```
@@ -160,6 +160,11 @@ def index():
     data = "Well hello there"
     return common_response(status_code=200, message=DATA_SENT, data=data)
 ```
+
+<br>
+
+**Path Operation** : 
+![image info](fast_api_advance/images/readme_images/path_operation.png)
 
 <br>
 
