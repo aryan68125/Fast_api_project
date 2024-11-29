@@ -169,7 +169,7 @@ def index():
 <br>
 
 Explanation of @app.get("/"):
-- @app.get("/") is a decorator that registers this function (index) as a handler for GET requests to the / route.
+- @app.get("/") is a decorator that registers this function (index) as a handler for GET requests to the / route. This decorator is what makes a normal python function into a path operation function.
 - In FastAPI, decorators like @app.get, @app.post, etc., allow you to bind specific routes (URLs) to specific HTTP methods (GET, POST, etc.). This lets the server know which function to call when a request is made to a specific endpoint.
 - Here, @app.get("/") binds the index function to the root URL /, so when a client sends a GET request to http://localhost:8000/, this function will be called.
 
