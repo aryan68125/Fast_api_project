@@ -491,6 +491,20 @@ INFO:     127.0.0.1:40038 - "POST /create-posts/ HTTP/1.1" 200 OK
 
 .....
 ```
+Issues in this methods are discussed below : <br>
+- It's a pain to get all the values from the body. right now we need to extract the fields individually and then convert it into a python dictionary and then save it into a variable.
+- Client side can send whatever data they want. Allowing the front-end to send arbitrary data is a bad move. The back-end must accept data in a particular format in this case where we are trying to create a blog we need : <br>
+    - Title : Title of the blog
+    - Body : Body of the blog
+    - created_by : The user who created that blog
+    - created_at : Stores the creation date of the blog
+    - updated_at : Stores the date when the blog is updated
+    - is_deleted : Flag that will allow us to soft delete the blog 
+    
+    <br>
+    
+    **NOTE** : One important thing to note is none of these fields are allowed to be empty because we don't want users to create a blog that have a any of the above fields to be empty.
+
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
