@@ -718,6 +718,8 @@ class BlogModel(SQLModel, table=True):
     **Use Cases for ```index=True```** : If you frequently search, filter, or sort by a specific field (e.g., title), indexing it can significantly speed up those queries. <br>
 
 #### write an api end-point in main.py file to create a blog 
+**POST request** To create a data in the DB -->
+![image info](fast_api_advance/images/readme_images/post_request.png)
 ```
 from fastapi import FastAPI, Depends
 
