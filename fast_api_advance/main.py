@@ -22,5 +22,5 @@ def get_posts():
 @app.post("/create-posts/")
 def create_posts(data: dict = Body(...)):
     print(data)
-    return response(status=201,message="Post Created!")
+    return response(status=201,message="Post Created!",data={"new_data":data})
 
