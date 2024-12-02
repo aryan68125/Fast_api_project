@@ -522,13 +522,14 @@ from datetime import date
 from pydantic import BaseModel
 
 #Pydantic model
-class Blog(BaseModel):
+class Blogs(BaseModel):
     title: str
     content:str
+    is_published:bool = True
     created_by:int
-    created_at:date.today()
+    created_at:date = Field(default_factory=date.today)
     updated_at:date
-    is_deleted:bool
+    is_deleted:bool = False
 ```
 
 ## Pydantic Schemas [Handling (POST) request]

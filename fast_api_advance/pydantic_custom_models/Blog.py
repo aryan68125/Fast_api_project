@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 class Blogs(BaseModel):
     title: str
     content:str
+    is_published:bool = True
     created_by:int
     created_at:date = Field(default_factory=date.today)
     updated_at:date
-    is_deleted:bool = Field(default_factory=False)
+    is_deleted:bool = False
