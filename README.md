@@ -500,11 +500,36 @@ Issues in this methods are discussed below : <br>
     - created_at : Stores the creation date of the blog
     - updated_at : Stores the date when the blog is updated
     - is_deleted : Flag that will allow us to soft delete the blog 
-    
-    <br>
-    
-    **NOTE** : One important thing to note is none of these fields are allowed to be empty because we don't want users to create a blog that have a any of the above fields to be empty.
+- The data is not getting validated. So how do I ensure that the user sends the data what I want ? <br>
+**NOTE** : One important thing to note is none of these fields are allowed to be empty because we don't want users to create a blog that have a any of the above fields to be empty. <br>
+Hence I can't have a post having a blank title or body so how do we make sure that the data that the user sends is actually valid. <br>
+- Ultimately we want to force the client to send the data in a schema that we expect.
+<br>
 
+**Schema** : The defination of how the data should look like so that it is almost like a contract. <br>
+
+The way to force the client to send data in a way that the back-end api expects it to be is to use Pydantic. Pydantic is used to define how our schema should look like.
+
+## Pydantic 
+Pydantic has nothing to do with FastAPI. It is it's own completely different and separate library that you can use with any of the python application. FastAPI just makes use of it so that we can define the schema.
+#### Example : How to use Pydantic to define a schema for the api-end point
+pydantic models named Blog.py
+```
+#datetime imports
+from datetime import date
+
+#import pydantic
+from pydantic import BaseModel
+
+#Pydantic model
+class Blog(BaseModel):
+    title: str
+    content:str
+    created_by:int
+    created_at:date.today()
+    updated_at:date
+    is_deleted:bool
+```
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
