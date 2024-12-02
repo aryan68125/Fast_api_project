@@ -455,6 +455,7 @@ In post request we can send data from the front-end to the back-end to create da
 
 Here is an example of a post request made in FastAPI : <br>
 ```
+from fastapi.params import Body
 @app.post("/create-posts/")
 def create_posts(data: dict = Body(...)):
     print(data)
