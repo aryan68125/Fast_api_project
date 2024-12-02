@@ -48,6 +48,10 @@ This folder holds the code that demonstrates
 #### fast_api_intermediate
 - Pydantic Schemas
 
+## Some tips and tricks in FastAPI
+#### Open swagger UI to test your apis 
+The way to open swagger UI so that you can test your apis in an interactive way all you need to do is add docs after the server's url in your browser as shown here :-> ``` http://127.0.0.1:8000/docs ``` You don't need to do any additional configurations to enable swagger UI.
+
 ## Some common Problems and their solutions (Troubleshooting)
 #### Module not found error when running server in FastAPI
 My code in main.py file looks like this
@@ -163,7 +167,7 @@ def index():
 
 <br>
 
-**Path Operation** : 
+**Path Operation** :  <br>
 ![image info](fast_api_advance/images/readme_images/path_operation.png)
 
 <br>
