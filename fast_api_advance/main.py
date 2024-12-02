@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.params import Body
 
 #custom response structure import
 from utility.common_response import response
@@ -19,6 +20,7 @@ def get_posts():
     return response(status=200,message="Post Sent!", data=dummy_data)
 
 @app.post("/create-posts/")
-def create_posts():
+def create_posts(data: dict = Body(...)):
+    print(data)
     return response(status=201,message="Post Created!")
 

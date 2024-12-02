@@ -52,6 +52,16 @@ This folder holds the code that demonstrates
 #### Open swagger UI to test your apis 
 The way to open swagger UI so that you can test your apis in an interactive way all you need to do is add docs after the server's url in your browser as shown here :-> ``` http://127.0.0.1:8000/docs ``` You don't need to do any additional configurations to enable swagger UI.
 
+#### Change the port of the FastAPI server 
+Add the code below at the last after you have added all of you api end-points in your ```main.py``` file.
+```
+import uvicorn
+if __name__ == "__main__":
+    uvicorn.run(app,host="127.0.0.1",port=8001)
+```
+**NOTE** : The command ```uvicorn main:app --reload``` will run the server in its default port i.e 8000
+If you want the changes made by the above code to take effect and start the server in the port that you defined in main.py file as shown above then use this command to do so ```python3 main.py```
+
 ## Some common Problems and their solutions (Troubleshooting)
 #### Module not found error when running server in FastAPI
 My code in main.py file looks like this
@@ -435,15 +445,51 @@ def index(limit:int=5,publish: Optional[bool]=None):
 ```
 In case of query parameter we don't specify anything in the url in the decorator
 
-## Change the port of the FastAPI server 
-Add the code below at the last after you have added all of you api end-points in your ```main.py``` file.
+## POST requests
+**POST request** To create a data in the DB -->
+![image info](fast_api_advance/images/readme_images/post_request.png)
+
+<br>
+
+In post request we can send data from the front-end to the back-end to create data resource in the database in the body. <br>
+
+Here is an example of a post request made in FastAPI : <br>
 ```
-import uvicorn
-if __name__ == "__main__":
-    uvicorn.run(app,host="127.0.0.1",port=8001)
+@app.post("/create-posts/")
+def create_posts(data: dict = Body(...)):
+    print(data)
+    return response(status=201,message="Post Created!")
 ```
-**NOTE** : The command ```uvicorn main:app --reload``` will run the server in its default port i.e 8000
-If you want the changes made by the above code to take effect and start the server in the port that you defined in main.py file as shown above then use this command to do so ```python3 main.py```
+
+```data: dict = Body(...)```
+
+<br>
+
+- Body(...) = Its gonna extract all of the fields from the body.
+- dict = Its gonna convert the extracted fields into a python dictionary.
+- data = It is a variable name which is gonna save the dictionary of data that has been recently converted
+
+<br>
+
+When you pass in this in your swagger post api end-point that creates posts
+```
+{
+"title":"Intels downfall",
+"body":"Intels downfall body of blog"
+}
+```
+You will get a response that the posts is created if everything works well. <br>
+In your back-end since you printed the data you will get the output in your server's terminal that looks something like this : 
+```
+.....
+
+INFO:     127.0.0.1:60996 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32780 - "POST /create-posts/ HTTP/1.1" 422 Unprocessable Entity
+{'title': 'Intels downfall', 'body': 'Intels downfall body of blog'}
+INFO:     127.0.0.1:40038 - "POST /create-posts/ HTTP/1.1" 200 OK
+
+.....
+```
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
@@ -718,8 +764,6 @@ class BlogModel(SQLModel, table=True):
     **Use Cases for ```index=True```** : If you frequently search, filter, or sort by a specific field (e.g., title), indexing it can significantly speed up those queries. <br>
 
 #### write an api end-point in main.py file to create a blog 
-**POST request** To create a data in the DB -->
-![image info](fast_api_advance/images/readme_images/post_request.png)
 ```
 from fastapi import FastAPI, Depends
 
