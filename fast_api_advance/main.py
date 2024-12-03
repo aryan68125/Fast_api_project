@@ -3,6 +3,7 @@ from fastapi.params import Body
 
 #custom response structure import
 from utility.common_response import response
+from utility.dummy_data import my_blogs
 
 #import pydantic model
 from pydantic_custom_models.Blog import Blogs
@@ -15,11 +16,7 @@ def root():
 
 @app.get("/blogs/")
 def get_blogs():
-    dummy_data = [
-        {"post_title 1":"this is post 1 body"},
-        {"post_title 2":"this is post 2 body"},
-        {"post_title 3":"this is post 3 body"}
-    ]
+    dummy_data = my_blogs
     return response(status=200,message="Post Sent!", data=dummy_data)
 
 #post method implementation with pydantic model
