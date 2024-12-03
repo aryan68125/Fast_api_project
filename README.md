@@ -538,6 +538,12 @@ class Blogs(BaseModel):
 ![image info](fast_api_advance/images/readme_images/crud.png)
 CRUD is and acronym for Create Read Update Delete operations that we perform on the records in the database. 
 
+#### For now we are not gonna make connection to the database for our CRUD operations because its complicated at this time
+We are gonna define a global variable that we will use to perform our CRUD operations.
+```
+
+```
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
