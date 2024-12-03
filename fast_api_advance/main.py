@@ -31,6 +31,7 @@ def create_posts(data: dict = Body(...)):
 #post method implementation with pydantic model
 @app.post("/create-blog/")
 def create_blog(Blog:Blogs):
-    print(Blog) # print the entire data coming from the front-end
-    print(Blog.updated_at) #extract and print the field from incoming data 
+    print(f"++++Printing Pydantic model : {Blog}") # print the entire data coming from the front-end
+    print(f"----Extracting a field from a pydantic model : {Blog.updated_at}") #extract and print the field from incoming data 
+    print(f">>>>Converting Pydantic model to Python dictionary : {Blog.dict()}") #converts a pydantic model into a python dictionary
     return response(status=201,message="Blog created!")

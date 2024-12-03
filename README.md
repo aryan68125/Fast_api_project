@@ -510,7 +510,7 @@ Hence I can't have a post having a blank title or body so how do we make sure th
 
 The way to force the client to send data in a way that the back-end api expects it to be is to use Pydantic. Pydantic is used to define how our schema should look like.
 
-## Pydantic 
+## Pydantic Models
 Pydantic has nothing to do with FastAPI. It is it's own completely different and separate library that you can use with any of the python application. FastAPI just makes use of it so that we can define the schema.
 #### Example : How to use Pydantic to define a schema for the api-end point
 pydantic models named Blog.py
@@ -533,6 +533,10 @@ class Blogs(BaseModel):
     is_deleted:bool = False
     rating : Optional[int] = None
 ```
+
+## CRUD Operation
+![image info](fast_api_advance/images/readme_images/crud.png)
+CRUD is and acronym for Create 
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
