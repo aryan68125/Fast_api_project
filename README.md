@@ -658,6 +658,7 @@ def delete_blog(id:int):
     deleted_blog = my_blogs.pop(blog_index)
     return response(status=status.HTTP_200_OK,message="Blog deleted!",data=deleted_blog)
 ```
+After deleting the record when sending the response you need to send status code 204 here is the link to the video if you want to confirm the info that is provided here : https://youtu.be/QxlryV2Zoi4?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=297
 
 ## FastAPI error handling in api response : 
 Up until now we have been sending in hard coded status code in our api responses. There is a better way to send status code in our responses we can use FastAPIs status library <br>
