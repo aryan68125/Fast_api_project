@@ -44,10 +44,10 @@ def get_blog(id:int):
     return response(status=status.HTTP_200_OK,message="Blog sent!",data=result)
 
 @app.delete('/blogs/{id}')
-def delete_blog(id:int):
+def delete_blog(id:int,status_code=status.HTTP_204_NO_CONTENT):
     blog_index = next((index for index,blog in enumerate(my_blogs) if blog['id']==id),None)
     if not blog_index:
         return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
     deleted_blog = my_blogs.pop(blog_index)
-    return response(status=status.HTTP_200_OK,message="Blog deleted!",data=deleted_blog)
+    return response(status=status.HTTP_204_NO_CONTENT)
     

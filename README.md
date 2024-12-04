@@ -651,14 +651,18 @@ sample code : <br>
 
 ```
 @app.delete('/blogs/{id}')
-def delete_blog(id:int):
+def delete_blog(id:int,status_code=status.HTTP_204_NO_CONTENT):
     blog_index = next((index for index,blog in enumerate(my_blogs) if blog['id']==id),None)
     if not blog_index:
         return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
     deleted_blog = my_blogs.pop(blog_index)
-    return response(status=status.HTTP_200_OK,message="Blog deleted!",data=deleted_blog)
+    return response(status=status.HTTP_204_NO_CONTENT)
 ```
 After deleting the record when sending the response you need to send status code 204 here is the link to the video if you want to confirm the info that is provided here : https://youtu.be/QxlryV2Zoi4?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=297
+
+<br>
+
+**NOTE**: If you try to send any data when using status_code 204 in FastAPI it will throw an error. This is how FastAPI handles 204 status code responses. So make sure that you don't send any data when using status_code 204 in case if delete operation.
 
 ## FastAPI error handling in api response : 
 Up until now we have been sending in hard coded status code in our api responses. There is a better way to send status code in our responses we can use FastAPIs status library <br>
