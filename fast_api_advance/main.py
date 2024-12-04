@@ -50,4 +50,14 @@ def delete_blog(id:int,status_code=status.HTTP_204_NO_CONTENT):
         return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
     deleted_blog = my_blogs.pop(blog_index)
     return response(status=status.HTTP_204_NO_CONTENT)
+
+@app.patch('/blogs/{id}')
+def update_blog(id:int,Blog:Blogs):
+    front_end_blog_dict = Blog.dict()
+    front_end_blog_dict['id'] = id
+    blog_index = next((index for index,blog in enumerate(my_blogs) if blog['id']==id),None)
+    if not blog_index:
+        return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
+    my_blogs[blog_index] = front_end_blog_dict
+    return response(status=status.HTTP_200_OK,message="Blog updated!")
     

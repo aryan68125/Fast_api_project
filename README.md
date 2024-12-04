@@ -664,6 +664,8 @@ After deleting the record when sending the response you need to send status code
 
 **NOTE**: If you try to send any data when using status_code 204 in FastAPI it will throw an error. This is how FastAPI handles 204 status code responses. So make sure that you don't send any data when using status_code 204 in case if delete operation.
 
+
+
 ## FastAPI error handling in api response : 
 Up until now we have been sending in hard coded status code in our api responses. There is a better way to send status code in our responses we can use FastAPIs status library <br>
 ```
