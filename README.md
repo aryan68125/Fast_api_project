@@ -534,7 +534,7 @@ class Blogs(BaseModel):
     rating : Optional[int] = None
 ```
 
-## CRUD Operation
+## CRUD Operation : Using Dummy data without database
 ![image info](fast_api_advance/images/readme_images/crud.png)
 CRUD is and acronym for Create Read Update Delete operations that we perform on the records in the database. 
 
@@ -615,6 +615,32 @@ Now at this point our function has access to whatever value was in that url righ
 **Dictionary Comprehension:** ```{blog["id"]: blog for blog in my_blogs}``` creates a new dictionary where the key is the blog's id and the value is the entire blog dictionary. <br>
 **Efficient Lookup:** Using ```blogs_by_id.get(blog_id)``` allows you to fetch a blog by its id in ```O(1)``` time. <br>
 **Fallback:** If the id is not found, the get method will return ```"Blog not found"``` as a default value. You can customize this as needed.
+**NOTE** : <br>
+- ```def get_blog(id):``` If you use this then the id you will get will be type str and this may cause issues since if you use this id then the dictionary comprehension logic won't be able to find the blog in the dummy data.
+- ```def get_blog(id:int):``` This code automatically converts the id into integer this will work correctly with the dictionary comprehension code and will return the blog if the id matches in the dummy data.
+    - Updated code : 
+        ```
+        @app.get("/blogs/{id}")
+        def get_blog(id:int):
+            print(type(id),id)
+            # Create a dictionary keyed by blog IDs
+            blogs_by_id = {blog["id"]: blog for blog in my_blogs}
+
+            blog_id = int(id)
+            result = blogs_by_id.get(blog_id, False)
+            if not result:
+                return response(status=404,error="Blog not found!")
+            return response(status=200,message="Blog sent!",data=result)
+        ```
+### GET : Get all blogs : Read operation
+Sample code : 
+```
+@app.get("/blogs")
+def get_blogs():
+    dummy_data = my_blogs
+    return response(status=200,message="Post Sent!", data=dummy_data)
+```
+The above code sends all the blogs there is in dummy data.
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 

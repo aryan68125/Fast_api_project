@@ -30,8 +30,9 @@ def create_blog(Blog:Blogs):
     my_blogs.append(blog_dict)
     return response(status=201,message="Blog created!",data=blog_dict)
 
+#get one blog from the dummy data
 @app.get("/blogs/{id}")
-def get_blog(id):
+def get_blog(id:int):
     print(type(id),id)
     # Create a dictionary keyed by blog IDs
     blogs_by_id = {blog["id"]: blog for blog in my_blogs}
