@@ -540,9 +540,15 @@ CRUD is and acronym for Create Read Update Delete operations that we perform on 
 
 #### For now we are not gonna make connection to the database for our CRUD operations because its complicated at this time
 We are gonna define a global variable that we will use to perform our CRUD operations.
+main.py code
+```
+@app.get("/blogs/")
+def get_blogs():
+    dummy_data = my_blogs
+    return response(status=200,message="Post Sent!", data=dummy_data)
 ```
 
-```
+```dummy_data``` gets serialized automatically by FastAPI into JSON format. You don't need to do anything here.
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
