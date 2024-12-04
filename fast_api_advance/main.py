@@ -22,7 +22,6 @@ def get_blogs():
 #post method implementation with pydantic model
 @app.post("/blogs/")
 def create_blog(Blog:Blogs):
-    print(f"++++Printing Pydantic model : {Blog}") # print the entire data coming from the front-end
-    print(f"----Extracting a field from a pydantic model : {Blog.updated_at}") #extract and print the field from incoming data 
-    print(f">>>>Converting Pydantic model to Python dictionary : {Blog.dict()}") #converts a pydantic model into a python dictionary
+    #Add the incoming data to the dummy data array
+    my_blogs.append(Blog.dict())
     return response(status=201,message="Blog created!")
