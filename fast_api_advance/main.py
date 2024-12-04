@@ -8,20 +8,36 @@ from utility.dummy_data import my_blogs
 #import pydantic model
 from pydantic_custom_models.Blog import Blogs
 
+from random import randrange
+
 app = FastAPI()
 
 @app.get('/')
 def root():
     return response(status=200,message="This api follows best practices")
 
-@app.get("/blogs/")
+@app.get("/blogs")
 def get_blogs():
     dummy_data = my_blogs
     return response(status=200,message="Post Sent!", data=dummy_data)
 
 #post method implementation with pydantic model
-@app.post("/blogs/")
+@app.post("/blogs")
 def create_blog(Blog:Blogs):
     #Add the incoming data to the dummy data array
-    my_blogs.append(Blog.dict())
-    return response(status=201,message="Blog created!")
+    blog_dict = Blog.dict()
+    blog_dict['id'] = randrange(0,99999999)
+    my_blogs.append(blog_dict)
+    return response(status=201,message="Blog created!",data=blog_dict)
+
+@app.get("/blogs/{id}")
+def get_blog(id):
+    print(type(id),id)
+    # Create a dictionary keyed by blog IDs
+    blogs_by_id = {blog["id"]: blog for blog in my_blogs}
+
+    blog_id = int(id)
+    result = blogs_by_id.get(blog_id, False)
+    if not result:
+        return response(status=404,error="Blog not found!")
+    return response(status=200,message="Blog sent!",data=result)

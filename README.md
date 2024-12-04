@@ -538,6 +538,7 @@ class Blogs(BaseModel):
 ![image info](fast_api_advance/images/readme_images/crud.png)
 CRUD is and acronym for Create Read Update Delete operations that we perform on the records in the database. 
 
+### POST : Create operation
 #### For now we are not gonna make connection to the database for our CRUD operations because its complicated at this time
 We are gonna define a dummy_data that we will use to perform our CRUD operations. <br>
 Define the dummy data into a seperate file and then import it into your main.py file
@@ -575,15 +576,45 @@ def get_blogs():
     return response(status=200,message="Post Sent!", data=dummy_data)
 
 #post method implementation with pydantic model
+from random import randrange
 @app.post("/blogs/")
 def create_blog(Blog:Blogs):
-    print(f"++++Printing Pydantic model : {Blog}") # print the entire data coming from the front-end
-    print(f"----Extracting a field from a pydantic model : {Blog.updated_at}") #extract and print the field from incoming data 
-    print(f">>>>Converting Pydantic model to Python dictionary : {Blog.dict()}") #converts a pydantic model into a python dictionary
-    return response(status=201,message="Blog created!")
+    #Add the incoming data to the dummy data array
+    blog_dict = Blog.dict()
+    blog_dict['id'] = randrange(0,99999999)
+    my_blogs.append(blog_dict)
+    return response(status=201,message="Blog created!",data=blog_dict)
 ```
 **Explaination** : <br>
-```dummy_data``` gets serialized automatically by FastAPI into JSON format. You don't need to do anything here.
+```dummy_data``` gets serialized automatically by FastAPI into JSON format. You don't need to do anything here. <br> <be>
+Since we are not using sql we need to assign pk randomly to the dictionary that we are appending into our dummy data array. This is done to simulate the database objects. <br>
+**NOTE:** The best practice is to send the newly created posts after the post is saved along with the success message. Check this video out for more reference <br>
+```https://youtu.be/50YYelLKm3w?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=478```
+
+### GET : Get one blog : Read operation
+Sample code : <br>
+```
+@app.get("/blogs/{id}")
+def get_blog(id):
+    print(type(id),id)
+    # Create a dictionary keyed by blog IDs
+    blogs_by_id = {blog["id"]: blog for blog in my_blogs}
+
+    blog_id = int(id)
+    result = blogs_by_id.get(blog_id, False)
+    if not result:
+        return response(status=404,error="Blog not found!")
+    return response(status=200,message="Blog sent!",data=result)
+```
+```@app.get("/blogs/{id}")``` The id here is a path parameter. The id represents the primary key of a specific record in the database. The FastAPI will automaticaly extract the id and then we can pass it right into the function like this as shown below: <br>
+```
+@app.get("/blogs/{id}")
+def get_blog(id):
+```
+Now at this point our function has access to whatever value was in that url right there. <br>
+**Dictionary Comprehension:** ```{blog["id"]: blog for blog in my_blogs}``` creates a new dictionary where the key is the blog's id and the value is the entire blog dictionary. <br>
+**Efficient Lookup:** Using ```blogs_by_id.get(blog_id)``` allows you to fetch a blog by its id in ```O(1)``` time. <br>
+**Fallback:** If the id is not found, the get method will return ```"Blog not found"``` as a default value. You can customize this as needed.
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
