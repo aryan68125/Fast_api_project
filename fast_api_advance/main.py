@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.params import Body
 
 #custom response structure import
@@ -14,12 +14,12 @@ app = FastAPI()
 
 @app.get('/')
 def root():
-    return response(status=200,message="This api follows best practices")
+    return response(status=status.HTTP_200_OK,message="This api follows best practices")
 
 @app.get("/blogs")
 def get_blogs():
     dummy_data = my_blogs
-    return response(status=200,message="Post Sent!", data=dummy_data)
+    return response(status=status.HTTP_200_OK,message="Post Sent!", data=dummy_data)
 
 #post method implementation with pydantic model
 @app.post("/blogs")
@@ -28,7 +28,7 @@ def create_blog(Blog:Blogs):
     blog_dict = Blog.dict()
     blog_dict['id'] = randrange(0,99999999)
     my_blogs.append(blog_dict)
-    return response(status=201,message="Blog created!",data=blog_dict)
+    return response(status=status.HTTP_201_CREATED,message="Blog created!",data=blog_dict)
 
 #get one blog from the dummy data
 @app.get("/blogs/{id}")
@@ -40,5 +40,5 @@ def get_blog(id:int):
     blog_id = int(id)
     result = blogs_by_id.get(blog_id, False)
     if not result:
-        return response(status=404,error="Blog not found!")
-    return response(status=200,message="Blog sent!",data=result)
+        return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
+    return response(status=status.HTTP_200_OK,message="Blog sent!",data=result)
