@@ -540,7 +540,7 @@ CRUD is and acronym for Create Read Update Delete operations that we perform on 
 
 ### POST : Create operation
 #### For now we are not gonna make connection to the database for our CRUD operations because its complicated at this time
-We are gonna define a dummy_data that we will use to perform our CRUD operations. <br>
+We are gonna define a **dummy_data** that we will use to perform our CRUD operations. <br>
 Define the dummy data into a seperate file and then import it into your main.py file
 ```
 from datetime import date
@@ -589,9 +589,10 @@ def create_blog(Blog:Blogs):
 ```dummy_data``` gets serialized automatically by FastAPI into JSON format. You don't need to do anything here. <br> <be>
 Since we are not using sql we need to assign pk randomly to the dictionary that we are appending into our dummy data array. This is done to simulate the database objects. <br>
 **NOTE:** The best practice is to send the newly created posts after the post is saved along with the success message. Check this video out for more reference <br>
-```https://youtu.be/50YYelLKm3w?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=478```
+https://youtu.be/50YYelLKm3w?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=478
 
 ### GET : Get one blog : Read operation
+**NOTE** : This operation is performed on dummy data and not on actual database <br>
 Sample code : <br>
 ```
 @app.get("/blogs/{id}")
@@ -633,6 +634,7 @@ Now at this point our function has access to whatever value was in that url righ
             return response(status=200,message="Blog sent!",data=result)
         ```
 ### GET : Get all blogs : Read operation
+**NOTE** : This operation is performed on dummy data and not on actual database <br>
 Sample code : 
 ```
 @app.get("/blogs")
@@ -641,6 +643,21 @@ def get_blogs():
     return response(status=200,message="Post Sent!", data=dummy_data)
 ```
 The above code sends all the blogs there is in dummy data.
+
+### DELETE : Delete blog by id : Delete operation
+**NOTE** : This operation is performed on dummy data and not on actual database
+<br>
+sample code : <br>
+
+```
+@app.delete('/blogs/{id}')
+def delete_blog(id:int):
+    blog_index = next((index for index,blog in enumerate(my_blogs) if blog['id']==id),None)
+    if not blog_index:
+        return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
+    deleted_blog = my_blogs.pop(blog_index)
+    return response(status=status.HTTP_200_OK,message="Blog deleted!",data=deleted_blog)
+```
 
 ## FastAPI error handling in api response : 
 Up until now we have been sending in hard coded status code in our api responses. There is a better way to send status code in our responses we can use FastAPIs status library <br>
@@ -697,7 +714,7 @@ def get_blog(id:int):
         return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
     return response(status=status.HTTP_200_OK,message="Blog sent!",data=result)
 ```
-
+Here is a docs related to status code : https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 

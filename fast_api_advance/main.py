@@ -37,8 +37,17 @@ def get_blog(id:int):
     # Create a dictionary keyed by blog IDs
     blogs_by_id = {blog["id"]: blog for blog in my_blogs}
 
-    blog_id = int(id)
+    blog_id = id
     result = blogs_by_id.get(blog_id, False)
     if not result:
         return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
     return response(status=status.HTTP_200_OK,message="Blog sent!",data=result)
+
+@app.delete('/blogs/{id}')
+def delete_blog(id:int):
+    blog_index = next((index for index,blog in enumerate(my_blogs) if blog['id']==id),None)
+    if not blog_index:
+        return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
+    deleted_blog = my_blogs.pop(blog_index)
+    return response(status=status.HTTP_200_OK,message="Blog deleted!",data=deleted_blog)
+    
