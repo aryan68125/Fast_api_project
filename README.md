@@ -49,6 +49,47 @@ This folder holds the code that demonstrates
 - Pydantic Schemas
 
 ## Some tips and tricks in FastAPI
+#### Run server when your main.py file is inside a python package 
+The directory structure looks something like this : 
+```
+.
+├── blog_app
+│   ├── __init__.py
+│   ├── main.py
+│   └── __pycache__
+│       ├── __init__.cpython-312.pyc
+│       └── main.cpython-312.pyc
+├── dummy_data_CRUD.py
+├── images
+│   └── readme_images
+│       ├── crud.png
+│       ├── path_operation.png
+│       └── post_request.png
+├── naive_main_code.py
+├── __pycache__
+│   ├── Blog.cpython-312.pyc
+│   └── main.cpython-312.pyc
+├── pydantic_custom_models
+│   ├── Blog.py
+│   ├── __init__.py
+│   └── __pycache__
+│       ├── Blog.cpython-312.pyc
+│       └── __init__.cpython-312.pyc
+└── utility
+    ├── common_response.py
+    ├── dummy_data.py
+    ├── __init__.py
+    └── __pycache__
+        ├── common_response.cpython-312.pyc
+        ├── dummy_data.cpython-312.pyc
+        └── __init__.cpython-312.pyc
+```
+This command is used to run the FastAPI server if your main.py file is inside a python package.
+```
+uvicorn blog_app.main:app --reload 
+```
+Here ```blog_app``` is the package (folder) name , ```main``` is the file name , ```app``` is defined in the main.py file like this ```app = FastAPI()```. ```app``` is nothing but a FastAPI instance which allows us to use decorators and make our common python functions into a FastAPI routes
+
 #### Open swagger UI to test your apis 
 The way to open swagger UI so that you can test your apis in an interactive way all you need to do is add docs after the server's url in your browser as shown here :-> ``` http://127.0.0.1:8000/docs ``` You don't need to do any additional configurations to enable swagger UI.
 
@@ -664,7 +705,36 @@ After deleting the record when sending the response you need to send status code
 
 **NOTE**: If you try to send any data when using status_code 204 in FastAPI it will throw an error. This is how FastAPI handles 204 status code responses. So make sure that you don't send any data when using status_code 204 in case if delete operation.
 
+### PATCH : Partial update operation
+**NOTE** : This operation is performed on dummy data and not on actual database
+<br>
+sample code : <br>
 
+```
+@app.patch('/blogs/{id}')
+def update_blog(id:int,Blog:Blogs):
+    front_end_blog_dict = Blog.dict()
+    front_end_blog_dict['id'] = id
+    blog_index = next((index for index,blog in enumerate(my_blogs) if blog['id']==id),None)
+    if not blog_index:
+        return response(status=status.HTTP_404_NOT_FOUND,error="Blog not found!")
+    my_blogs[blog_index] = front_end_blog_dict
+    return response(status=status.HTTP_200_OK,message="Blog updated!")
+```
+**Explaination** : 
+```
+front_end_blog_dict = Blog.dict()
+front_end_blog_dict['id'] = id
+```
+Convert the incoming data into a python dictionary. Save the id back into the incoming data after it has been converted to the python dictionary. <br>
+```
+blog_index = next((index for index,blog in enumerate(my_blogs)
+```
+Extract blog index from the array of dictionaries in dummy data.
+```
+my_blogs[blog_index] = front_end_blog_dict
+```
+Assign the data coming from the front-end to the dummy data using blog index.
 
 ## FastAPI error handling in api response : 
 Up until now we have been sending in hard coded status code in our api responses. There is a better way to send status code in our responses we can use FastAPIs status library <br>
