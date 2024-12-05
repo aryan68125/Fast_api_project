@@ -985,12 +985,19 @@ CREATE TABLE product (
     is_deleted BOOLEAN DEFAULT FALSE     -- Boolean column with default value of FALSE
 );
 ```
-```id SERIAL PRIMARY KEY,``` : Auto-incrementing primary key
-```created_by INT REFERENCES users(id),``` : Foreign key referencing the users table
-```name VARCHAR(255) NOT NULL``` : Product name, not nullable
-```price NUMERIC(10, 2) NOT NULL,``` : Price with up to 10 digits and 2 decimal places
-```created_at DATE DEFAULT CURRENT_DATE,``` : Date column with default value of current date
-```is_deleted BOOLEAN DEFAULT FALSE``` : Boolean column with default value of FALSE
+- ```id SERIAL PRIMARY KEY,``` : Auto-incrementing primary key
+- ```created_by INT REFERENCES users(id),``` : Foreign key referencing the users table
+- ```name VARCHAR(255) NOT NULL``` : Product name, not nullable
+- ```price NUMERIC(10, 2) NOT NULL,``` : Price with up to 10 digits and 2 decimal places
+- ```created_at DATE DEFAULT CURRENT_DATE,``` : Date column with default value of current date
+- ```is_deleted BOOLEAN DEFAULT FALSE``` : Boolean column with default value of FALSE 
+
+<br>
+
+**SHOW ALL ENTRY IN A TABLE IN ASCENDING ORDER**:
+```
+SELECT * FROM product ORDER BY id ASC;
+```
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
