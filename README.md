@@ -815,7 +815,8 @@ Now before we start using GET, POST, PUT, PATCH and DELETE operations to perform
 
 There two types of databases Relational and NoSQL
 ![image info](fast_api_advance/images/readme_images/Types_of_databases.png)
-
+In this project we are gonna use PostgreSQL. Now all of the relational databases are 90% same with the 10% differences.
+Now each of the databases implements SQL in a slightly different way. So you may see differences in some of the SQL commands in different types of relational databases that are currently being used in the market.
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
