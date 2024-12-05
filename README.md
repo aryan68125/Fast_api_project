@@ -891,13 +891,38 @@ Lets take an example of an e-commerce application : <br>
 - Users table : Consists all of the records for all the users
 - Products table : Consists all of the records for all the products that you want to sell
 - Purchases tables : Consists all of the records related to purchases of products made by customers. <br>
-All these tables are gonna form some form of relationship. That's why its called a relational database. <br>
+All these tables are gonna form some form of relationship. That's why its called a relational database.
+
+<br> 
+
 ![image info](fast_api_advance/images/readme_images/database_tables_rows_col.png)
 - A table is made up of columns and rows
 - Each column represents a different attribute
 - Each row represents a different entry in the table
-![image info](fast_api_advance/images/readme_images/Database_datatypes.png)
 
+<br> 
+
+![image info](fast_api_advance/images/readme_images/Database_datatypes.png)
+- Databases have datatypes just like any programming language.
+- When create a column in a database table you need to specify what kind of data type that column is gonna store in a table.
+
+<br>
+
+![image info](fast_api_advance/images/readme_images/pk.png)
+- When we create a table we have to specify something called a primary key.
+- Primary key is a column or a group of columns that uniquely identifies each row in a table.
+- We need to tell postgres how can we identify each enty in a table.
+- We can only have one primary key per table. We cannot have multiple primary keys in a table.
+- However primary key can span multiple columns.
+- Each primary_key must be unique and no duplicate primary keys are allowed in a database table.
+
+<br>
+
+![image info](fast_api_advance/images/readme_images/pk_email.png)
+- Normally the primary key is the id column as shown in the previous example picture just above this section but that's not always the case
+- The table doesn't even have to have the id column. There are certain instances where you may not want an id column.
+- If you don't have an id column or you may not want an id column there must be some column in a table that is able to uniquely identify the entries in that table.
+- Email column or a phone number column could be used to uniquely identify the users in a users table. A user can only signup using a unique email address or a phone number hence these two fields can serve the purpose of being a primary key just like an id column in a table.
 
 ### Postgres
 ![image info](fast_api_advance/images/readme_images/postgres.png)
