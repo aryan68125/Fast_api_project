@@ -884,6 +884,21 @@ SQL is a language that is used to communicate with the DBMS.
 - DBMS is then gonna take that statement and then perform the operation on the database
 - After completing that operation the DBMS is gonna send the result back to us.
 
+### Database Tables : Concept of tables
+![image info](fast_api_advance/images/readme_images/database_tables.png)
+A table is a representation of a subject or event in an application. <br>
+Lets take an example of an e-commerce application : <br>
+- Users table : Consists all of the records for all the users
+- Products table : Consists all of the records for all the products that you want to sell
+- Purchases tables : Consists all of the records related to purchases of products made by customers. <br>
+All these tables are gonna form some form of relationship. That's why its called a relational database. <br>
+![image info](fast_api_advance/images/readme_images/database_tables_rows_col.png)
+- A table is made up of columns and rows
+- Each column represents a different attribute
+- Each row represents a different entry in the table
+![image info](fast_api_advance/images/readme_images/Database_datatypes.png)
+
+
 ### Postgres
 ![image info](fast_api_advance/images/readme_images/postgres.png)
 When you install an instance of postgres, what we can do is carve out multiple separate databases i.e we can create a separate database for our project other than the database that is provided by default by postgres after installation.These databases are completely isolated and have nothing to do with one another. <br>
