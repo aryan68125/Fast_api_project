@@ -1032,6 +1032,11 @@ is_deleted BOOLEAN DEFAULT FALSE
 );
 ```
 
+**Add a column to an existing table**
+```
+ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
+```
+
 **Delete table** <br>
 ```
 DROP TABLE product;
