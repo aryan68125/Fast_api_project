@@ -1,8 +1,27 @@
+-- Create a table
 CREATE TABLE product (
 id SERIAL PRIMARY KEY,
 name VARCHAR(255) NOT NULL,
-price MONEY NOT NULL,
+price NUMERIC NOT NULL,
 is_deleted BOOLEAN DEFAULT FALSE
 );
 
+-- Select all entries in ascending order by id column of the table
 SELECT * FROM product ORDER BY id ASC;
+
+--Create enties in the table
+INSERT INTO product ("name","price","is_deleted")VALUES
+('Tv','20000.52',True),
+('Laptop','80000.52', False),
+('Gaming pc','156000', False),
+('Ceiling fan','6000.52', False),
+('Washing machine','17000.52', False),
+('Coffee machine','90000.52', False);
+
+--Add a new column to and existing table
+ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
+
+--DELETE table
+DROP TABLE product;
+
+
