@@ -1,3 +1,5 @@
+-- RAW SQL QUERIES --
+
 -- Create a table
 CREATE TABLE product (
 id SERIAL PRIMARY KEY,

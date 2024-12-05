@@ -1066,6 +1066,74 @@ DROP TABLE product;
 ```
 Drop table will drop the schema (table) after deleting the data from the table
 
+### Stored procedures VS Database functions
+The primary difference between stored procedures and database functions lies in their purpose, usage, and behavior within a database. Here’s a detailed comparison:
+
+---
+
+#### **1. Purpose**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| Primarily used for executing a series of SQL statements, often involving business logic, complex operations, or modifying the database state. | Used for computations or returning a value/result based on inputs, generally without modifying the database. |
+
+---
+
+#### **2. Return Value**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| May return zero, one, or multiple values (often via `OUT` parameters). | Always returns a single value or a table. |
+| The return value is optional. | The return value is mandatory. |
+
+---
+
+#### **3. Invocation**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| Called with the `CALL` statement: `CALL procedure_name(arguments);` | Called as part of an SQL query: `SELECT function_name(arguments);` |
+| Cannot be directly used in a `SELECT` or `WHERE` clause. | Can be used directly in SQL statements, such as `SELECT` or `WHERE`. |
+
+---
+
+#### **4. Modifications to the Database**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| Can perform DML operations (e.g., `INSERT`, `UPDATE`, `DELETE`) and manage transactions. | Typically does not perform DML operations but focuses on returning computed values or results. (In PostgreSQL, functions can modify data, but this is discouraged for functions designed to be deterministic.) |
+
+---
+
+#### **5. Parameters**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| Supports `IN`, `OUT`, and `INOUT` parameters for flexible input/output. | Only supports `IN` parameters (values are passed to the function). |
+| Can return results via `OUT` parameters or by using a cursor. | Returns results using the `RETURN` clause. |
+
+---
+
+#### **6. Transaction Control**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| Can manage transactions explicitly with `BEGIN`, `COMMIT`, and `ROLLBACK`. | Cannot control transactions explicitly. A function must run within the context of the calling transaction. |
+
+---
+
+#### **7. Use Cases**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| - Batch processing of multiple SQL statements. <br> - Complex logic that requires conditional operations, loops, or error handling. <br> - Modifying the database. | - Performing computations and returning results. <br> - Used as part of queries to filter or transform data. <br> - Returning a table or scalar value. |
+
+---
+
+#### **8. Performance**
+| **Stored Procedure**                 | **Database Function**                           |
+|--------------------------------------|------------------------------------------------|
+| Often used for operations where interaction with the database state is required. | Usually optimized for read-only operations or calculations and are faster when used for small computations. |
+
+---
+
+#### Summary
+- Use **stored procedures** for performing operations involving the database state, business logic, or batch processing.
+- Use **database functions** for computations, returning values, or transforming data in queries.
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
