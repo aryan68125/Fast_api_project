@@ -793,6 +793,30 @@ def get_blog(id:int):
 ```
 Here is a docs related to status code : https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 
+## Database
+Now before we start using GET, POST, PUT, PATCH and DELETE operations to perform CRUD on data in the database we need to understand what database actually is. <br>
+**What is a Database?** 
+- A database is a collection of organized data that can be easily accessed and managed.
+
+<br>
+
+**What is DBMS ?** 
+![image info](fast_api_advance/images/readme_images/Database_and_dbms.png)
+- We never interact with the database directly. 
+- Instead we have a database management system thats going to sit in the middle. 
+- So when we want to perform an operation on the database we are going to send that request to a database management system and that is then going to perform that operation on the database and then it's going to send that result back to us.
+- So we never talk to the databases directly we always have a piece of software that sits in the middle and acts as the brains behind the database
+
+<br>
+
+**Types of databases :**
+
+<br>
+
+There two types of databases Relational and NoSQL
+![image info](fast_api_advance/images/readme_images/Types_of_databases.png)
+
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
