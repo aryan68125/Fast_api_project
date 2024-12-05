@@ -994,9 +994,47 @@ CREATE TABLE product (
 
 <br>
 
-**SHOW ALL ENTRY IN A TABLE IN ASCENDING ORDER**:
+**SHOW ALL ENTRIES IN A TABLE IN ASCENDING ORDER**:
 ```
 SELECT * FROM product ORDER BY id ASC;
+```
+**CREATE MULTIPLE ENTRIES IN TABLE**:
+```
+INSERT INTO product ("name","price","is_deleted")VALUES
+('Tv','20000.52',True),
+('Laptop','80000.52', False),
+('Gaming pc','156000', False),
+('Ceiling fan','6000.52', False),
+('Washing machine','17000.52', False),
+('Coffee machine','90000.52', False);
+```
+Basically, ```money``` has its (very limited) uses. The Postgres Wiki suggests to largely avoid it, except for those narrowly defined cases. The advantage over ```numeric``` is performance. <br>
+```decimal``` is just an alias for ```numeric``` in Postgres, and widely used for monetary data, being an "arbitrary precision" type. The manual: <br>
+- The type ```numeric``` can store numbers with a very large number of digits. It is especially recommended for storing monetary amounts and other quantities where exactness is required.
+
+<br>
+
+**NOTE :** Notice how when inseting values in the table we don't need to manually enter the values in the id (primary_key) column. This happens because when creating table we defined primary key column to be some thing like this ```id SERIAL PRIMARY KEY,``` <br>
+Auto-Incrementing Integer:
+The ```SERIAL``` keyword automatically creates an integer column that auto-increments whenever a new row is inserted.  
+- It starts from 1 by default (or another value if specified) and increments by 1 for each new record.
+- Behind the scenes, PostgreSQL creates a sequence to handle this auto-incrementation.
+
+<br>
+
+**Create table using numeric data type in the price column instead of money**
+```
+CREATE TABLE product (
+id SERIAL PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
+price NUMERIC NOT NULL,
+is_deleted BOOLEAN DEFAULT FALSE
+);
+```
+
+**Delete table** <br>
+```
+DROP TABLE product;
 ```
 
 ## Pydantic Schemas [Handling (POST) request]
