@@ -941,6 +941,7 @@ All these tables are gonna form some form of relationship. That's why its called
 ![image info](fast_api_advance/images/readme_images/null_constraints.png)
 - When it comes to creating columns by default postgres allows you to leave a column blank. In the back-end postgres will put in a value of null if no value is supplied to that column in that particular entry of the table.
 - We can use null constraint to tell postgres to prevent the creation of an entry in the table if a column in that entry is not provided with any value.
+- So for example if we have a users table and let's suppose we have a null constraint set on phone number column of that table then if we try to create an entry of user without supplying the user's phone number then the postgres will check and see that the phone number's column has a not-null constraint set to it and it will throw an error.
 
 ### Postgres
 ![image info](fast_api_advance/images/readme_images/postgres.png)
