@@ -895,6 +895,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 <br> 
 
+#### Rows and Columns
 ![image info](fast_api_advance/images/readme_images/database_tables_rows_col.png)
 - A table is made up of columns and rows
 - Each column represents a different attribute
@@ -902,12 +903,14 @@ All these tables are gonna form some form of relationship. That's why its called
 
 <br> 
 
+#### DataTypes in a database tables
 ![image info](fast_api_advance/images/readme_images/Database_datatypes.png)
 - Databases have datatypes just like any programming language.
 - When create a column in a database table you need to specify what kind of data type that column is gonna store in a table.
 
 <br>
 
+#### Primary keys in a database table
 ![image info](fast_api_advance/images/readme_images/pk.png)
 - When we create a table we have to specify something called a primary key.
 - Primary key is a column or a group of columns that uniquely identifies each row in a table.
@@ -923,6 +926,21 @@ All these tables are gonna form some form of relationship. That's why its called
 - The table doesn't even have to have the id column. There are certain instances where you may not want an id column.
 - If you don't have an id column or you may not want an id column there must be some column in a table that is able to uniquely identify the entries in that table.
 - Email column or a phone number column could be used to uniquely identify the users in a users table. A user can only signup using a unique email address or a phone number hence these two fields can serve the purpose of being a primary key just like an id column in a table.
+
+<br>
+
+#### **Constraints in the database table**
+#### Unique constrains in a database tables
+![image info](fast_api_advance/images/readme_images/unique_constraints.png)
+- We can add an extra constraints on any column in a database table.
+- A unique constraints can be applied to any column to make sure every record has a unique value for that column.
+
+<br>
+
+#### Null constrains in a database tables
+![image info](fast_api_advance/images/readme_images/null_constraints.png)
+- When it comes to creating columns by default postgres allows you to leave a column blank. In the back-end postgres will put in a value of null if no value is supplied to that column in that particular entry of the table.
+- We can use null constraint to tell postgres to prevent the creation of an entry in the table if a column in that entry is not provided with any value.
 
 ### Postgres
 ![image info](fast_api_advance/images/readme_images/postgres.png)
