@@ -956,6 +956,42 @@ The image above shows that the postgres allows you to carve out multiple databas
 - This is the reason why post installation postgres gives a default database called postgres.
 - You can't connect to postgres you have to specify a database.
 
+### PGAdmin : A GUI that is used to interface with our posgres database.
+**Create a Database in postgres** : 
+```
+CREATE DATABASE "FastAPI"
+    WITH
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LOCALE_PROVIDER = 'libc'
+    CONNECTION LIMIT = -1
+    IS_TEMPLATE = False;
+```
+**Create a table** : <br>
+This table have columns 
+- id (primary key)
+- created_by (foreign key)
+- name (varchar)
+- price (Numeric)
+- created_at (date)
+- is_deleted (boolean) 
+```
+CREATE TABLE product (
+    id SERIAL PRIMARY KEY,
+    created_by INT REFERENCES users(id),
+    name VARCHAR(255) NOT NULL,  
+    price NUMERIC(10, 2) NOT NULL,       
+    created_at DATE DEFAULT CURRENT_DATE,
+    is_deleted BOOLEAN DEFAULT FALSE     -- Boolean column with default value of FALSE
+);
+```
+```id SERIAL PRIMARY KEY,``` : Auto-incrementing primary key
+```created_by INT REFERENCES users(id),``` : Foreign key referencing the users table
+```name VARCHAR(255) NOT NULL``` : Product name, not nullable
+```price NUMERIC(10, 2) NOT NULL,``` : Price with up to 10 digits and 2 decimal places
+```created_at DATE DEFAULT CURRENT_DATE,``` : Date column with default value of current date
+```is_deleted BOOLEAN DEFAULT FALSE``` : Boolean column with default value of FALSE
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
