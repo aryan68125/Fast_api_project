@@ -21,6 +21,12 @@ INSERT INTO product ("name","price","is_deleted","inventory")VALUES
 --Add a new column to and existing table
 ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
 ALTER TABLE product ADD COLUMN inventory integer DEFAULT 0;
+--Add anew column that stores the current date time in an existing table
+ALTER TABLE product ADD COLUMN created_at TIMESTAMP WITH TIME ZONE;
+UPDATE product SET created_at = CURRENT_TIMESTAMP;
+ALTER TABLE product ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE product ALTER COLUMN created_at SET NOT NULL;
+
 
 --Truncate table
 TRUNCATE TABLE product

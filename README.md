@@ -1036,6 +1036,13 @@ is_deleted BOOLEAN DEFAULT FALSE
 ```
 ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
 ```
+**Add a column that stores current date time in an existing table**
+```
+ALTER TABLE product ADD COLUMN created_at TIMESTAMP WITH TIME ZONE;
+UPDATE product SET created_at = CURRENT_TIMESTAMP;
+ALTER TABLE product ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE product ALTER COLUMN created_at SET NOT NULL;
+```
 
 **Truncate table** <br>
 ```
