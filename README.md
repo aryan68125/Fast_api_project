@@ -1037,10 +1037,17 @@ is_deleted BOOLEAN DEFAULT FALSE
 ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
 ```
 
+**Truncate table** <br>
+```
+TRUNCATE TABLE product
+``` 
+This will preserve the schema (table) after deleting the data from the table.
+
 **Delete table** <br>
 ```
 DROP TABLE product;
 ```
+Drop table will drop the schema (table) after deleting the data from the table
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
