@@ -1044,6 +1044,16 @@ ALTER TABLE product ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE product ALTER COLUMN created_at SET NOT NULL;
 ```
 
+**Update an entry in an existing table**
+```
+UPDATE product SET price = 6700 WHERE id = 10;
+```
+
+**Delete a row from the table**
+```
+DELETE FROM product WHERE id = 11;
+```
+
 **Truncate table** <br>
 ```
 TRUNCATE TABLE product
