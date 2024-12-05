@@ -1134,6 +1134,8 @@ The primary difference between stored procedures and database functions lies in 
 - Use **stored procedures** for performing operations involving the database state, business logic, or batch processing.
 - Use **database functions** for computations, returning values, or transforming data in queries.
 
+### Stored Procedures
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
