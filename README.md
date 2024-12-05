@@ -49,7 +49,66 @@ This folder holds the code that demonstrates
 - Pydantic Schemas
 
 ## Some tips and tricks in FastAPI
-#### Run server when your main.py file is inside a python package 
+### PostgreSQL Installation process 
+Folow the guide from the official postgreSQL docs provided in the link given below <br>
+https://www.postgresql.org/download/linux/debian/
+
+### Set password to the default user in postgreSQL server
+In PostgreSQL, the `postgres` role does not have a password set by default, and you cannot log in using this role with a password until one is explicitly set. Here's how you can set or change the password for the `postgres` role:
+
+---
+
+#### 1. **Log In as the `postgres` User**
+Since you’re already logged in to the system, you can switch to the `postgres` user and enter the PostgreSQL shell:
+```bash
+sudo -u postgres psql
+```
+
+---
+
+#### 2. **Set a Password for `postgres`**
+In the PostgreSQL shell, run the following command to set or change the password:
+```sql
+ALTER USER postgres WITH PASSWORD 'your_secure_password';
+```
+Replace `your_secure_password` with a strong password of your choice.
+
+---
+
+#### 3. **Verify the Password**
+Exit the PostgreSQL shell:
+```sql
+\q
+```
+Then try logging in using the `postgres` user with the password:
+```bash
+psql -U postgres -W
+```
+You’ll be prompted to enter the password.
+
+---
+
+#### 4. **Optional: Update Authentication Method in `pg_hba.conf`**
+If the `pg_hba.conf` file is configured for `peer` or `trust` authentication, PostgreSQL will not ask for a password. To require a password, you need to update the authentication method:
+
+1. Open the `pg_hba.conf` file (usually located in `/etc/postgresql/<version>/main/`):
+   ```bash
+   sudo nano /etc/postgresql/<version>/main/pg_hba.conf
+   ```
+
+2. Find the line for the `postgres` user or `local` connections and change the method to `md5`:
+   ```plaintext
+   local   all   postgres   md5
+   ```
+
+3. Save and close the file, then restart PostgreSQL:
+   ```bash
+   sudo systemctl restart postgresql
+   ```
+
+Now, the `postgres` role will require a password to log in.
+
+### Run server when your main.py file is inside a python package 
 The directory structure looks something like this : 
 ```
 .
@@ -90,10 +149,10 @@ uvicorn blog_app.main:app --reload
 ```
 Here ```blog_app``` is the package (folder) name , ```main``` is the file name , ```app``` is defined in the main.py file like this ```app = FastAPI()```. ```app``` is nothing but a FastAPI instance which allows us to use decorators and make our common python functions into a FastAPI routes
 
-#### Open swagger UI to test your apis 
+### Open swagger UI to test your apis 
 The way to open swagger UI so that you can test your apis in an interactive way all you need to do is add docs after the server's url in your browser as shown here :-> ``` http://127.0.0.1:8000/docs ``` You don't need to do any additional configurations to enable swagger UI.
 
-#### Change the port of the FastAPI server 
+### Change the port of the FastAPI server 
 Add the code below at the last after you have added all of you api end-points in your ```main.py``` file.
 ```
 import uvicorn
@@ -104,7 +163,7 @@ if __name__ == "__main__":
 If you want the changes made by the above code to take effect and start the server in the port that you defined in main.py file as shown above then use this command to do so ```python3 main.py```
 
 ## Some common Problems and their solutions (Troubleshooting)
-#### Module not found error when running server in FastAPI
+### Module not found error when running server in FastAPI
 My code in main.py file looks like this
 ```
 from fastapi import FastAPI
@@ -817,6 +876,26 @@ There two types of databases Relational and NoSQL
 ![image info](fast_api_advance/images/readme_images/Types_of_databases.png)
 In this project we are gonna use PostgreSQL. Now all of the relational databases are 90% same with the 10% differences.
 Now each of the databases implements SQL in a slightly different way. So you may see differences in some of the SQL commands in different types of relational databases that are currently being used in the market.
+
+### SQL : Structured Query Language
+![image info](fast_api_advance/images/readme_images/SQL_DBMS.png)
+SQL is a language that is used to communicate with the DBMS.
+- So when we want to perform an operation we are gonna send an sepcific SQL statement to the DBMS 
+- DBMS is then gonna take that statement and then perform the operation on the database
+- After completing that operation the DBMS is gonna send the result back to us.
+
+### Postgres
+![image info](fast_api_advance/images/readme_images/postgres.png)
+When you install an instance of postgres, what we can do is carve out multiple separate databases i.e we can create a separate database for our project other than the database that is provided by default by postgres after installation.These databases are completely isolated and have nothing to do with one another. <br>
+The diagram below will help you to understand more of what is discussed above : 
+![image info](fast_api_advance/images/readme_images/postgres_2_db.png)
+The image above shows that the postgres allows you to carve out multiple databases from a postgres instance.
+- By default every postgres installation comes with one database already created called **"postgres"**
+- This is important because postgres requires you to specify the name of a database to make a connection. So there needs to always be one database.
+**NOTE :** The reason why after postgres installation postgres creates a database called postgres is because : 
+- If you ever want to connect with a posgres instance you need to specify a database that you want to connect to.
+- This is the reason why post installation postgres gives a default database called postgres.
+- You can't connect to postgres you have to specify a database.
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
