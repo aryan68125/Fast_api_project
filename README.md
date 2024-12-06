@@ -859,7 +859,7 @@ Now before we start using GET, POST, PUT, PATCH and DELETE operations to perform
 
 <br>
 
-**What is DBMS ?** 
+**What is DBMS ?**  <br>
 ![image info](fast_api_advance/images/readme_images/Database_and_dbms.png)
 - We never interact with the database directly. 
 - Instead we have a database management system thats going to sit in the middle. 
