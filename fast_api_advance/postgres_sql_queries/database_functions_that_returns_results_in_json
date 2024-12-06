@@ -8,7 +8,11 @@ DECLARE
     result JSON;
 BEGIN
     -- Convert the query result into JSON and assign it to 'result'
-    result := json_agg(row_to_json(t))
+    result := json_build_object(
+		'status',True,
+		'message', 'Read successfull!',
+		'data',json_agg(row_to_json(t))
+	)
              FROM (SELECT * FROM product ORDER BY id ASC) t;
     
     -- Return the result JSON
@@ -27,7 +31,34 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 -- usage -- 
-SELECT read_all_products()
+SELECT read_all_products();
+
+
+-- READ ONE ENTRY FROM A TABLE --
+DROP FUNCTION IF EXISTS read_one_product;
+CREATE OR REPLACE FUNCTION read_one_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+	result JSON;
+BEGIN
+	
+	result := json_build_object(
+		'status',True,
+		'message','Read success!',
+		'data', row_to_json(t)
+	)
+		FROM (SELECT * FROM product WHERE id = p_id AND is_deleted = False) t;
+	RETURN result;
+EXCEPTION
+	WHEN OTHERS THEN
+	RETURN 	json_build_object(
+		'status',False,
+		'message','Error in reading !' || SQLERRM
+	);
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT read_one_product(8);
 
 
 
