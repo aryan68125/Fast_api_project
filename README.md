@@ -852,7 +852,7 @@ def get_blog(id:int):
 ```
 Here is a docs related to status code : https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 
-## Database
+# Database
 Now before we start using GET, POST, PUT, PATCH and DELETE operations to perform CRUD on data in the database we need to understand what database actually is. <br>
 **What is a Database?** 
 - A database is a collection of organized data that can be easily accessed and managed.
@@ -877,14 +877,14 @@ There two types of databases Relational and NoSQL
 In this project we are gonna use PostgreSQL. Now all of the relational databases are 90% same with the 10% differences.
 Now each of the databases implements SQL in a slightly different way. So you may see differences in some of the SQL commands in different types of relational databases that are currently being used in the market.
 
-### SQL : Structured Query Language
+## SQL : Structured Query Language
 ![image info](fast_api_advance/images/readme_images/SQL_DBMS.png)
 SQL is a language that is used to communicate with the DBMS.
 - So when we want to perform an operation we are gonna send an sepcific SQL statement to the DBMS 
 - DBMS is then gonna take that statement and then perform the operation on the database
 - After completing that operation the DBMS is gonna send the result back to us.
 
-### Database Tables : Concept of tables
+## Database Tables : Concept of tables
 ![image info](fast_api_advance/images/readme_images/database_tables.png)
 A table is a representation of a subject or event in an application. <br>
 Lets take an example of an e-commerce application : <br>
@@ -895,7 +895,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 <br> 
 
-#### Rows and Columns
+### Rows and Columns
 ![image info](fast_api_advance/images/readme_images/database_tables_rows_col.png)
 - A table is made up of columns and rows
 - Each column represents a different attribute
@@ -903,14 +903,14 @@ All these tables are gonna form some form of relationship. That's why its called
 
 <br> 
 
-#### DataTypes in a database tables
+### DataTypes in a database tables
 ![image info](fast_api_advance/images/readme_images/Database_datatypes.png)
 - Databases have datatypes just like any programming language.
 - When create a column in a database table you need to specify what kind of data type that column is gonna store in a table.
 
 <br>
 
-#### Primary keys in a database table
+### Primary keys in a database table
 ![image info](fast_api_advance/images/readme_images/pk.png)
 - When we create a table we have to specify something called a primary key.
 - Primary key is a column or a group of columns that uniquely identifies each row in a table.
@@ -929,7 +929,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 <br>
 
-#### **Constraints in the database table**
+### **Constraints in the database table**
 #### Unique constrains in a database tables
 ![image info](fast_api_advance/images/readme_images/unique_constraints.png)
 - We can add an extra constraints on any column in a database table.
@@ -945,7 +945,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 <br>
 
-### Postgres
+## Postgres
 ![image info](fast_api_advance/images/readme_images/postgres.png)
 When you install an instance of postgres, what we can do is carve out multiple separate databases i.e we can create a separate database for our project other than the database that is provided by default by postgres after installation.These databases are completely isolated and have nothing to do with one another. <br>
 The diagram below will help you to understand more of what is discussed above : 
@@ -958,8 +958,8 @@ The image above shows that the postgres allows you to carve out multiple databas
 - This is the reason why post installation postgres gives a default database called postgres.
 - You can't connect to postgres you have to specify a database.
 
-### PGAdmin : A GUI that is used to interface with our posgres database.
-**Create a Database in postgres** : 
+## PGAdmin : A GUI that is used to interface with our posgres database.
+### **Create a Database in postgres** : 
 ```
 CREATE DATABASE "FastAPI"
     WITH
@@ -969,7 +969,7 @@ CREATE DATABASE "FastAPI"
     CONNECTION LIMIT = -1
     IS_TEMPLATE = False;
 ```
-**Create a table** : <br>
+### **Create a table** : <br>
 This table have columns 
 - id (primary key)
 - created_by (foreign key)
@@ -996,11 +996,11 @@ CREATE TABLE product (
 
 <br>
 
-**SHOW ALL ENTRIES IN A TABLE IN ASCENDING ORDER**:
+### **SHOW ALL ENTRIES IN A TABLE IN ASCENDING ORDER**:
 ```
 SELECT * FROM product ORDER BY id ASC;
 ```
-**CREATE MULTIPLE ENTRIES IN TABLE**:
+### **CREATE MULTIPLE ENTRIES IN TABLE**:
 ```
 INSERT INTO product ("name","price","is_deleted")VALUES
 ('Tv','20000.52',True),
@@ -1024,7 +1024,7 @@ The ```SERIAL``` keyword automatically creates an integer column that auto-incre
 
 <br>
 
-**Create table using numeric data type in the price column instead of money**
+### **Create table using numeric data type in the price column instead of money**
 ```
 CREATE TABLE product (
 id SERIAL PRIMARY KEY,
@@ -1033,53 +1033,52 @@ price NUMERIC NOT NULL,
 is_deleted BOOLEAN DEFAULT FALSE
 );
 ```
-**Add a column to an existing table**
+### **Add a column to an existing table**
 ```
 ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
 ```
-**Add a column that stores current date time in an existing table**
+### **Add a column that stores current date time in an existing table**
 ```
 ALTER TABLE product ADD COLUMN created_at TIMESTAMP WITH TIME ZONE;
 UPDATE product SET created_at = CURRENT_TIMESTAMP;
 ALTER TABLE product ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE product ALTER COLUMN created_at SET NOT NULL;
 ```
-
-**Update an entry in an existing table**
+### **Update an entry in an existing table**
 ```
 UPDATE product SET price = 6700 WHERE id = 10;
 ```
 
-**Delete a row from the table**
+### **Delete a row from the table**
 ```
 DELETE FROM product WHERE id = 11;
 ```
 
-**Truncate table** <br>
+### **Truncate table** <br>
 ```
 TRUNCATE TABLE product
 ``` 
 This will preserve the schema (table) after deleting the data from the table.
 
-**Delete table** <br>
+### **Delete table** <br>
 ```
 DROP TABLE product;
 ```
 Drop table will drop the schema (table) after deleting the data from the table
 
-### Stored procedures VS Database functions
+## Stored procedures VS Database functions
 The primary difference between stored procedures and database functions lies in their purpose, usage, and behavior within a database. Here’s a detailed comparison:
 
 ---
 
-#### **1. Purpose**
+### **1. Purpose**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | Primarily used for executing a series of SQL statements, often involving business logic, complex operations, or modifying the database state. | Used for computations or returning a value/result based on inputs, generally without modifying the database. |
 
 ---
 
-#### **2. Return Value**
+### **2. Return Value**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | May return zero, one, or multiple values (often via `OUT` parameters). | Always returns a single value or a table. |
@@ -1087,7 +1086,7 @@ The primary difference between stored procedures and database functions lies in 
 
 ---
 
-#### **3. Invocation**
+### **3. Invocation**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | Called with the `CALL` statement: `CALL procedure_name(arguments);` | Called as part of an SQL query: `SELECT function_name(arguments);` |
@@ -1095,14 +1094,14 @@ The primary difference between stored procedures and database functions lies in 
 
 ---
 
-#### **4. Modifications to the Database**
+### **4. Modifications to the Database**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | Can perform DML operations (e.g., `INSERT`, `UPDATE`, `DELETE`) and manage transactions. | Typically does not perform DML operations but focuses on returning computed values or results. (In PostgreSQL, functions can modify data, but this is discouraged for functions designed to be deterministic.) |
 
 ---
 
-#### **5. Parameters**
+### **5. Parameters**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | Supports `IN`, `OUT`, and `INOUT` parameters for flexible input/output. | Only supports `IN` parameters (values are passed to the function). |
@@ -1110,37 +1109,37 @@ The primary difference between stored procedures and database functions lies in 
 
 ---
 
-#### **6. Transaction Control**
+### **6. Transaction Control**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | Can manage transactions explicitly with `BEGIN`, `COMMIT`, and `ROLLBACK`. | Cannot control transactions explicitly. A function must run within the context of the calling transaction. |
 
 ---
 
-#### **7. Use Cases**
+### **7. Use Cases**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | - Batch processing of multiple SQL statements. <br> - Complex logic that requires conditional operations, loops, or error handling. <br> - Modifying the database. | - Performing computations and returning results. <br> - Used as part of queries to filter or transform data. <br> - Returning a table or scalar value. |
 
 ---
 
-#### **8. Performance**
+### **8. Performance**
 | **Stored Procedure**                 | **Database Function**                           |
 |--------------------------------------|------------------------------------------------|
 | Often used for operations where interaction with the database state is required. | Usually optimized for read-only operations or calculations and are faster when used for small computations. |
 
 ---
 
-#### Summary
+### Summary
 - Use **stored procedures** for performing operations involving the database state, business logic, or batch processing.
 - Use **database functions** for computations, returning values, or transforming data in queries.
 
-### PostgreSQL Functions
+## PostgreSQL Functions
 What are PostgreSQL Functions?
 - A function in PostgreSQL is a named block of reusable SQL or PL/pgSQL code that performs a specific task and can be called from SQL or other languages.
 - Functions are defined using CREATE FUNCTION and typically accept arguments, perform operations, and return results.
 
-**INSERT DATA INTO A TABLE**
+### **INSERT DATA INTO A TABLE**
 ```
 CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC)
 RETURNS VOID AS $$
@@ -1184,7 +1183,7 @@ Explaination : <br>
 
 <br>
 
-**READ ALL ENTRIES IN THE TABLE WHOSE HAS IS_DELETED SET TO FALSE**
+### **READ ALL ENTRIES IN THE TABLE WHOSE HAS IS_DELETED SET TO FALSE**
 ```
 CREATE OR REPLACE FUNCTION read_all_products()
 RETURNS TABLE(id INT, name VARCHAR, price NUMERIC, is_deleted BOOLEAN) AS $$
@@ -1200,7 +1199,7 @@ Usage : ```SELECT * FROM read_all_products();```
 
 <br>
 
-**READ ONE ENTRY USING ID IN THE TABLE**
+### **READ ONE ENTRY USING ID IN THE TABLE**
 ```
 CREATE OR REPLACE FUNCTION read_one_product(p_id INT)
 RETURNS TABLE (id INT, name VARCHAR, price NUMERIC, is_deleted BOOLEAN) AS $$
@@ -1216,7 +1215,7 @@ Usage : ```SELECT * FROM read_one_product(10);```
 
 <br>
 
-**UPDATE AN ENTRY IN A DATABASE TABLE**
+### **UPDATE AN ENTRY IN A DATABASE TABLE**
 ```
 CREATE OR REPLACE FUNCTION update_product(p_id INT, p_name VARCHAR, p_price NUMERIC)
 RETURNS VOID AS $$
@@ -1231,7 +1230,7 @@ Usage : ```SELECT update_product(8, 'Gaming Laptop', 99600);```
 
 <br>
 
-**SOFT DELETE AN ENTRY IN A DATABASE TABLE**
+### **SOFT DELETE AN ENTRY IN A DATABASE TABLE**
 ```
 CREATE OR REPLACE FUNCTION delete_product(p_id INT)
 RETURNS VOID AS $$
@@ -1246,7 +1245,7 @@ Usage : ```SELECT delete_product (13)```
 
 <br>
 
-**RESTORE AN ENTRY IN A DATABASE TABLE THAT HAS BEEN SOFT DELETED**
+### **RESTORE AN ENTRY IN A DATABASE TABLE THAT HAS BEEN SOFT DELETED**
 ```
 CREATE OR REPLACE FUNCTION restore_product(p_id INT)
 RETURNS VOID AS $$
@@ -1261,7 +1260,7 @@ Usage : ```SELECT restore_product (13)```
 
 <br>
 
-**HARD DELETE AN ENTRY IN A DATABASE TABLE**
+### **HARD DELETE AN ENTRY IN A DATABASE TABLE**
 ```
 CREATE OR REPLACE FUNCTION hard_delete(p_id INT)
 RETURNS VOID AS $$
@@ -1273,7 +1272,7 @@ $$ LANGUAGE plpgsql
 ```
 Usage : ```SELECT hard_delete(13)```
 
-#### Functions that performs CREATE, UPDATE, READ AND DELETE operations and also returns a success or failure message to the caller.
+## Functions that performs CREATE, UPDATE, READ AND DELETE operations and also returns a success or failure message to the caller.
 
 **NOTE** : If you have a function that aloread exists and you are trying to change the code and its datatype using the name of that existing function using ```CREATE OR REPLACE FUNCTION insert_product``` then in that case it won't work you will have to drop the existing table and then create a new one. <br>
 **Postgres does not allow to change the data type of an existing function.** <br>
@@ -1284,7 +1283,7 @@ DROP FUNCTION insert_product;
 
 <br>
 
-**INSERT AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+### **INSERT AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 ```
 CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC)
 RETURNS JSON AS $$
@@ -1351,7 +1350,7 @@ Returned json message from the function:
     - ```json_build_object``` is a PostgreSQL function that creates a JSON object from key-value pairs.
     - The result variable is being assigned a ```JSON``` object based on the condition checked by ```IF FOUND```. Depending on whether the update operation was successful or not, the contents of the ```JSON``` object will vary.
 
-**UPDATE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+### **UPDATE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 ```
 DROP FUNCTION update_product;
 CREATE OR REPLACE FUNCTION update_product(p_id INTEGER, p_name VARCHAR, p_price NUMERIC)
@@ -1406,7 +1405,7 @@ Returned json message from the function:
     - This part of the code provides a clear response in JSON format indicating that no product with the provided ID was found and thus the update could not be performed.
 
 
-**SOFT DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+### **SOFT DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 
 ```
 CREATE OR REPLACE FUNCTION delete_product(p_id INTEGER)
@@ -1448,7 +1447,7 @@ Now this function returns a success or failure message to the caller in JSON for
 Returned json message from the function:
 ![image info](fast_api_advance/images/readme_images/soft_delete_funciton_that_returns_json.png)
 
-**RESTORE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+### **RESTORE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 
 ```
 DROP FUNCTION restore_product;
@@ -1491,7 +1490,7 @@ Now this function returns a success or failure message to the caller in JSON for
 Returned json message from the function:
 ![image info](fast_api_advance/images/readme_images/restore_return_json.png)
 
-**HARD DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+### **HARD DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 
 ```
 DROP FUNCTION hard_delete_product;
