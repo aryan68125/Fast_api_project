@@ -264,4 +264,4 @@ SELECT hard_delete_product(16);
 
 
 
-select coalesce(json_arr(row_to_json(tmp)),json_build_object('error',-404)) from ()tmp;
+-- select coalesce(json_arr(row_to_json(tmp)),json_build_object('error',-404)) from ()tmp;
