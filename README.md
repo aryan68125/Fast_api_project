@@ -943,6 +943,8 @@ All these tables are gonna form some form of relationship. That's why its called
 - We can use null constraint to tell postgres to prevent the creation of an entry in the table if a column in that entry is not provided with any value.
 - So for example if we have a users table and let's suppose we have a null constraint set on phone number column of that table then if we try to create an entry of user without supplying the user's phone number then the postgres will check and see that the phone number's column has a not-null constraint set to it and it will throw an error.
 
+<br>
+
 ### Postgres
 ![image info](fast_api_advance/images/readme_images/postgres.png)
 When you install an instance of postgres, what we can do is carve out multiple separate databases i.e we can create a separate database for our project other than the database that is provided by default by postgres after installation.These databases are completely isolated and have nothing to do with one another. <br>
@@ -1031,7 +1033,6 @@ price NUMERIC NOT NULL,
 is_deleted BOOLEAN DEFAULT FALSE
 );
 ```
-
 **Add a column to an existing table**
 ```
 ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
@@ -1135,6 +1136,107 @@ The primary difference between stored procedures and database functions lies in 
 - Use **database functions** for computations, returning values, or transforming data in queries.
 
 ### Stored Procedures
+**INSERT DATA INTO A TABLE**
+```
+CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO product (name, price) VALUES (p_name, p_price);
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT insert_product('LED ambient lights', 150);```
+
+<br>
+
+**READ ALL ENTRIES IN THE TABLE WHOSE HAS IS_DELETED SET TO FALSE**
+```
+CREATE OR REPLACE FUNCTION read_all_products()
+RETURNS TABLE(id INT, name VARCHAR, price NUMERIC, is_deleted BOOLEAN) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT p.id, p.name, p.price, p.is_deleted
+    FROM product p
+    WHERE p.is_deleted = FALSE;
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT * FROM read_all_products();```
+
+<br>
+
+**READ ONE ENTRY USING ID IN THE TABLE**
+```
+CREATE OR REPLACE FUNCTION read_one_product(p_id INT)
+RETURNS TABLE (id INT, name VARCHAR, price NUMERIC, is_deleted BOOLEAN) AS $$
+BEGIN
+	RETURN QUERY
+	SELECT p.id, p.name, p.price, p.is_deleted
+    FROM product p
+    WHERE p.is_deleted = FALSE AND p.id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT * FROM read_one_product(10);```
+
+<br>
+
+**UPDATE AN ENTRY IN A DATABASE TABLE**
+```
+CREATE OR REPLACE FUNCTION update_product(p_id INT, p_name VARCHAR, p_price NUMERIC)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE product
+    SET name = p_name, price = p_price
+    WHERE id = p_id AND is_deleted = FALSE;
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT update_product(8, 'Gaming Laptop', 99600);```
+
+<br>
+
+**SOFT DELETE AN ENTRY IN A DATABASE TABLE**
+```
+CREATE OR REPLACE FUNCTION delete_product(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE product
+    SET is_deleted = TRUE
+    WHERE id = p_id AND is_deleted = FALSE;
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT delete_product (13)```
+
+<br>
+
+**RESTORE AN ENTRY IN A DATABASE TABLE THAT HAS BEEN SOFT DELETED**
+```
+CREATE OR REPLACE FUNCTION restore_product(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+	UPDATE product
+	SET is_deleted = False
+	WHERE id = p_id AND is_deleted = True;
+END;
+$$ LANGUAGE plpgsql
+```
+Usage : ```SELECT restore_product (13)```
+
+<br>
+
+**HARD DELETE AN ENTRY IN A DATABASE TABLE**
+```
+CREATE OR REPLACE FUNCTION hard_delete(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+	DELETE FROM product
+	WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql
+```
+Usage : ```SELECT hard_delete(13)```
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
