@@ -946,7 +946,7 @@ All these tables are gonna form some form of relationship. That's why its called
 <br>
 
 ## Postgres
-![image info](fast_api_advance/images/readme_images/postgres.png)
+![image info](fast_api_advance/images/readme_images/postgres.png) <br>
 When you install an instance of postgres, what we can do is carve out multiple separate databases i.e we can create a separate database for our project other than the database that is provided by default by postgres after installation.These databases are completely isolated and have nothing to do with one another. <br>
 The diagram below will help you to understand more of what is discussed above : 
 ![image info](fast_api_advance/images/readme_images/postgres_2_db.png)
