@@ -1,5 +1,4 @@
 SELECT * FROM product ORDER BY id ASC	;
-SELECT * FROM read_all_products();
 
 -- FUNCTIONS THAT PERFORMS CREATE, UPDATE, READ AND DELETE OPERATIONS ALSO RETURNS A SUCCESS OR FAILURE MESSAGE TO THE CALLER --
 DROP FUNCTION insert_product;
@@ -30,6 +29,7 @@ END;
 $$ LANGUAGE plpgsql;
 -- usage --
 SELECT insert_product('Designer ceiling lights', 350, True,125);
+
 
 -- UPDATE AN ENTRY IN THE TABLE --
 DROP FUNCTION update_product;
@@ -68,6 +68,8 @@ END;
 $$ LANGUAGE plpgsql;
 -- usage --
 SELECT update_product(15,'Front loader washing machine', 35690,False,25);
+
+
 
 -- SOFT DELETE AN ENTRY FROM THE TABLE DATABASE --
 SELECT * FROM product ORDER BY id ASC	;
@@ -109,6 +111,8 @@ $$ LANGUAGE plpgsql;
 -- usage --
 SELECT delete_product(16);
 
+
+
 -- RESTORE AN ENTRY FROM THE DATABASE TABLE --
 SELECT * FROM product ORDER BY id ASC	;
 
@@ -148,6 +152,8 @@ END;
 $$ LANGUAGE plpgsql;
 -- usage --
 SELECT restore_product(16)
+
+
 
 -- HARD DELETE AND ENTRY FROM THE TABLE --
 SELECT * FROM product ORDER BY id ASC	;
