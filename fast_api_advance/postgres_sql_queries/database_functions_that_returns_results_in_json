@@ -1,8 +1,40 @@
+-- FUNCTIONS THAT PERFORMS CREATE, UPDATE, READ AND DELETE OPERATIONS ALSO RETURNS A SUCCESS OR FAILURE MESSAGE TO THE CALLER --
+
+-- READ ALL ENTRIES IN A TABLE --
+DROP FUNCTION IF EXISTS read_all_products();
+CREATE OR REPLACE FUNCTION read_all_products()
+RETURNS JSON AS $$
+DECLARE 
+    result JSON;
+BEGIN
+    -- Convert the query result into JSON and assign it to 'result'
+    result := json_agg(row_to_json(t))
+             FROM (SELECT * FROM product ORDER BY id ASC) t;
+    
+    -- Return the result JSON
+    RETURN json_build_object(
+        'status', TRUE,
+        'message', 'Data read successfully!',
+        'data', result
+    );
+EXCEPTION
+    WHEN OTHERS THEN 
+        -- Return error message in case of an exception
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error in Reading: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+-- usage -- 
+SELECT read_all_products()
+
+
+
+-- INSERT AN ENTRY IN THE TABLE --
 SELECT * FROM product ORDER BY id ASC	;
 
--- FUNCTIONS THAT PERFORMS CREATE, UPDATE, READ AND DELETE OPERATIONS ALSO RETURNS A SUCCESS OR FAILURE MESSAGE TO THE CALLER --
 DROP FUNCTION insert_product;
--- INSERT AN ENTRY IN THE TABLE --
 CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC, p_is_on_sale BOOLEAN, p_inventory INTEGER)
 RETURNS JSON AS $$
 DECLARE
@@ -193,3 +225,12 @@ END;
 $$ LANGUAGE plpgsql;
 -- usage --
 SELECT hard_delete_product(16);
+
+
+
+
+
+
+
+
+select coalesce(json_arr(row_to_json(tmp)),json_build_object('error',-404)) from ()tmp;

@@ -1532,6 +1532,78 @@ Now this function returns a success or failure message to the caller in JSON for
 Returned json message from the function:
 ![image info](fast_api_advance/images/readme_images/hard_delete_return_json_function.png) <br>
 
+### **READ ALL ENTRIES IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+
+```
+DROP FUNCTION IF EXISTS read_all_products();
+CREATE OR REPLACE FUNCTION read_all_products()
+RETURNS JSON AS $$
+DECLARE 
+    result JSON;
+BEGIN
+    -- Convert the query result into JSON and assign it to 'result'
+    result := json_build_object(
+		'status',True,
+		'message', 'Read successfull!',
+		'data',json_agg(row_to_json(t))
+	)
+             FROM (SELECT * FROM product ORDER BY id ASC) t;
+    
+    -- Return the result JSON
+    RETURN json_build_object(
+        'status', TRUE,
+        'message', 'Data read successfully!',
+        'data', result
+    );
+EXCEPTION
+    WHEN OTHERS THEN 
+        -- Return error message in case of an exception
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error in Reading: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT read_all_products();```
+Now this function returns a success or failure message to the caller in JSON format.
+Returned json message from the function:
+![image info](fast_api_advance/images/readme_images/read_all_function_returns_json.png) <br>
+
+#### **Explaination**
+
+
+### **READ ONE ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+
+```
+DROP FUNCTION IF EXISTS read_one_product;
+CREATE OR REPLACE FUNCTION read_one_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+	result JSON;
+BEGIN
+	
+	result := json_build_object(
+		'status',True,
+		'message','Read success!',
+		'data', row_to_json(t)
+	)
+		FROM (SELECT * FROM product WHERE id = p_id AND is_deleted = False) t;
+	RETURN result;
+EXCEPTION
+	WHEN OTHERS THEN
+	RETURN 	json_build_object(
+		'status',False,
+		'message','Error in reading !' || SQLERRM
+	);
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT read_one_product(8);```
+Now this function returns a success or failure message to the caller in JSON format.
+Returned json message from the function:
+![image info](fast_api_advance/images/readme_images/read_one_function_return_json.png) <br>
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
