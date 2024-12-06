@@ -1135,7 +1135,11 @@ The primary difference between stored procedures and database functions lies in 
 - Use **stored procedures** for performing operations involving the database state, business logic, or batch processing.
 - Use **database functions** for computations, returning values, or transforming data in queries.
 
-### Stored Procedures
+### PostgreSQL Functions
+What are PostgreSQL Functions?
+- A function in PostgreSQL is a named block of reusable SQL or PL/pgSQL code that performs a specific task and can be called from SQL or other languages.
+- Functions are defined using CREATE FUNCTION and typically accept arguments, perform operations, and return results.
+
 **INSERT DATA INTO A TABLE**
 ```
 CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC)
@@ -1146,6 +1150,27 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 Usage : ```SELECT insert_product('LED ambient lights', 150);```
+Explaination : <br>
+- **RETURNS VOID AS $$**
+    - ```RETURNS VOID``` : 
+        - Specifies that the function does not return any value.
+        - This is used when the function performs an action (e.g., inserting data) but does not need to return a result.
+    - ```AS $$``` :
+        - Marks the start of the function body.
+        - ```$$``` is a delimiter for the function code block. It helps avoid issues with quotes or other delimiters inside the function.
+        - **What is delimiter?** : A delimiter in the context of PostgreSQL (and databases in general) is a character or sequence of characters used to mark boundaries between distinct elements or sections in a query, script, or block of code.
+- **p_name VARCHAR, p_price NUMERIC**
+    - These are input parameters for the function.
+    - ```p_name```: A parameter of type ```VARCHAR``` (variable-length string).
+    - ```p_price```: A parameter of type ```NUMERIC``` (decimal number).
+- **INSERT INTO product (name, price) VALUES (p_name, p_price);**
+    - This is a SQL statement that inserts a new record into the ```product``` table:
+    - The values for ```name``` and ```price``` come from the input parameters ```p_name``` and ```p_price```.
+- **$$ LANGUAGE plpgsql;**
+    - ```plpgsql``` : Specifies that the function is written in PL/pgSQL (PostgreSQL's procedural language).
+    - **Why this is written?** 
+        - PostgreSQL supports multiple procedural languages (e.g., SQL, PL/pgSQL, Python).
+        - This tells PostgreSQL how to interpret the function's body.
 
 <br>
 
@@ -1237,6 +1262,52 @@ END;
 $$ LANGUAGE plpgsql
 ```
 Usage : ```SELECT hard_delete(13)```
+
+#### Functions that performs CREATE, UPDATE, READ AND DELETE operations and also returns a success or failure message to the caller.
+
+**NOTE** : If you have a function that aloread exists and you are trying to change the code and its datatype using the name of that existing function using ```CREATE OR REPLACE FUNCTION insert_product``` then in that case it won't work you will have to drop the existing table and then create a new one. <br>
+**Postgres does not allow to change the data type of an existing function.** <br>
+Use the query below to drop the existing function. <br>
+```
+DROP FUNCTION insert_product;
+```
+
+<br>
+
+**INSERT AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+```
+CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to insert the product
+    INSERT INTO product (name, price) VALUES (p_name, p_price);
+
+    -- On success, return a JSON object indicating success
+    result := json_build_object(
+        'status', TRUE,
+        'message', 'Data insert successful!'
+    );
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle any errors and return a JSON object indicating failure
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error inserting product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+```
+
+Usage : ```SELECT insert_product('Washing machine', 15000);```
+Now this function returns a success or failure message to the caller in JSON format.
+
+**Explaination:** <br>
+
+
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
