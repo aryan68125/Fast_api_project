@@ -1571,7 +1571,35 @@ Returned json message from the function:
 ![image info](fast_api_advance/images/readme_images/read_all_function_returns_json.png) <br>
 
 #### **Explaination**
-
+- ```result := json_build_object(...)```
+    - Constructs a JSON object with keys:
+        - ```status```: Indicates if the operation was successful (```TRUE```).
+        - ```message```: Provides a success message (```'Read successful!'```).
+        - ```data```: Contains all rows from the product table in JSON format, generated using ```json_agg``` and ```row_to_json```
+- ```json_agg```
+    - Aggregates multiple JSON objects (one per row) into a JSON array.
+    - If the SELECT query returns multiple rows, json_agg collects these rows into a single array.
+    - Takes the output of row_to_json(t) (a single JSON object for each row) and creates a JSON array.
+- ```row_to_json```
+    - Converts a single row of data (from a table or query) into a JSON object.
+    - Each row in the product table needs to be converted to a JSON object for inclusion in the result array.
+    - Takes a row as input and returns it in JSON format with key-value pairs for each column.
+    ```
+    result := json_build_object(
+		'status',True,
+		'message', 'Read successfull!',
+		'data',json_agg(row_to_json(t))
+	)
+             FROM (SELECT * FROM product ORDER BY id ASC) t;
+    ```
+- ```FROM (SELECT * FROM product ORDER BY id ASC) t```
+    - Performs a subquery to select all rows from the product table, ordered by the id column in ascending order.
+    - The results of the subquery are aliased as ```t```.
+    - The ```FROM``` clause specifies the source of data for the ```json_agg``` function.
+    - The subquery ```(SELECT * FROM product ORDER BY id ASC)``` ensures the rows are fetched in a specific order.
+    - ```t``` is an alias for the result of the subquery.
+    - Required because ```row_to_json``` works on a single row or record, so the subquery's result set is treated as a table with alias ```t```.
+    - PostgreSQL treats the subquery as a virtual table named ```t```, enabling the use of ```row_to_json(t)``` to process each row.
 
 ### **READ ONE ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 
