@@ -1159,6 +1159,16 @@ Explaination : <br>
         - Marks the start of the function body.
         - ```$$``` is a delimiter for the function code block. It helps avoid issues with quotes or other delimiters inside the function.
         - **What is delimiter?** : A delimiter in the context of PostgreSQL (and databases in general) is a character or sequence of characters used to mark boundaries between distinct elements or sections in a query, script, or block of code.
+- **Alternatives to RETURNS VOID:**
+    - ```RETURNS INTEGER``` : 
+        - Use when you want the function to return a numeric result, like a count or ID
+    - ```RETURNS BOOLEAN``` : 
+        - Use when you need to indicate success (```TRUE```) or failure (```FALSE```)
+    - ```RETURNS TABLE``` : 
+        - Use for returning multiple rows or columns.
+        - Example: Returning a list of products.
+    - ```RETURNS JSON/JSONB``` : 
+        - Use for returning complex data as JSON
 - **p_name VARCHAR, p_price NUMERIC**
     - These are input parameters for the function.
     - ```p_name```: A parameter of type ```VARCHAR``` (variable-length string).
@@ -1304,10 +1314,224 @@ $$ LANGUAGE plpgsql;
 
 Usage : ```SELECT insert_product('Washing machine', 15000);```
 Now this function returns a success or failure message to the caller in JSON format.
+Returned json message from the function:
+![image info](fast_api_advance/images/readme_images/json_message_returned_by_user.png)
 
 **Explaination:** <br>
+- ```RETURNS JSON AS $$``` : 
+    - This indicates that the function's output will be of type ```JSON```.
+    - The ```JSON``` data type in PostgreSQL is used to store ```JSON``` (JavaScript Object Notation) data in a structured, standardized format.
+    - Many modern applications (e.g., APIs, web services) require data in JSON format because it is lightweight and easy to parse in programming languages like JavaScript, Python, or Java.
+    - Returning JSON from a function allows developers to send structured responses (like success/failure messages, nested data, etc.) directly from the database.
+    - Applications can directly consume the JSON data without additional processing or formatting.
+- ```DECLARE``` : 
+    - he ```DECLARE``` section is used to define variables that are local to the function
+    - Variables declared here can be used within the function body.
+- ```EXCEPTION``` : 
+    - The ```EXCEPTION``` block is used to handle errors that occur during function execution.
+    - If an error is raised within the ```BEGIN``` ... ```END``` block, control is passed to the ```EXCEPTION``` block to handle it gracefully.
+    - Prevents unexpected termination of the function due to errors.
+- ```WHEN OTHERS THEN```
+    - It is a catch-all condition in the ```EXCEPTION``` block
+    - It handles any exception that is not explicitly specified (like unique constraint violations or null errors)
+    - If an error occurs (e.g., duplicate entry or invalid data), the function execution jumps to ```WHEN OTHERS THEN```.
+    - The code inside this block is executed instead of terminating the function.
+- ```RETURN 'Error inserting product: ' || SQLERRM;```
+    - ```RETURN```: Ends the function execution and returns a value to the caller.
+    - ```'Error inserting product: ' || SQLERRM;``` : Concatenates the string ```'Error inserting product: '``` with the value of ```SQLERRM``` (error message).
+    - For example : If the error message is "duplicate key value violates unique constraint", the return value will be: <br>
+    ```
+    Error inserting product: duplicate key value violates unique constraint
+    ```
+- ```SQLERRM``` : 
+    - SQLERRM is a built-in variable in PL/pgSQL that contains the error message for the most recent exception.
+    - If an error occurs, SQLERRM captures and holds the description of that error.
+    - It can then be used in the ```EXCEPTION``` block to provide more detailed feedback.
+- ```result := json_build_object(...)```:
+    - ```json_build_object``` is a PostgreSQL function that creates a JSON object from key-value pairs.
+    - The result variable is being assigned a ```JSON``` object based on the condition checked by ```IF FOUND```. Depending on whether the update operation was successful or not, the contents of the ```JSON``` object will vary.
+
+**UPDATE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+```
+DROP FUNCTION update_product;
+CREATE OR REPLACE FUNCTION update_product(p_id INTEGER, p_name VARCHAR, p_price NUMERIC)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to update the product
+    UPDATE product
+    SET name = p_name, price = p_price
+    WHERE id = p_id;
+
+    -- Check if any rows were affected
+    IF FOUND THEN
+        result := json_build_object(
+            'status', TRUE,
+            'message', 'Data update successful!'
+        );
+    ELSE
+        result := json_build_object(
+            'status', FALSE,
+            'message', 'No product found with the given ID!'
+        );
+    END IF;
+
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error updating product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT update_product(15,'Front loader washing machine', 45890);```
+Now this function returns a success or failure message to the caller in JSON format.
+Returned json message from the function:
+![image info](fast_api_advance/images/readme_images/UPDATE_message_json.png)
+
+**Explaination**:
+- ```IF FOUND THEN``` : 
+    - ```FOUND``` is a special boolean variable in PL/pgSQL.
+        - It is automatically set by PostgreSQL to ```TRUE``` or ```FALSE``` after an SQL command that affects the database (e.g., ```SELECT```, ```INSERT```, ```UPDATE```, ```DELETE```).
+        - ```FOUND``` will be ```TRUE``` if the previous query affected at least one row and ```FALSE``` otherwise.
+        - ```FOUND``` is used to check if the ```UPDATE``` operation (or any other query before this) was able to find and update a product in the product table. If at least one product was updated (i.e., the product ID exists), then ```FOUND``` will be ```TRUE```. If no such product exists (i.e., no rows were updated), ```FOUND``` will be ```FALSE```.
+- The ```ELSE``` Block: Failure Case
+    - If ```FOUND``` is ```FALSE```, it means that no rows were affected by the ```UPDATE``` query, implying that there was no product with the given ID.
+    - Key status: FALSE to indicate the operation failed.
+    - Key message: A failure message "No product found with the given ID!".
+    - This part of the code provides a clear response in JSON format indicating that no product with the provided ID was found and thus the update could not be performed.
 
 
+**SOFT DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+
+```
+CREATE OR REPLACE FUNCTION delete_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to soft delete the product
+    UPDATE product
+    SET is_deleted = TRUE
+    WHERE id = p_id AND is_deleted = False;
+
+    -- Check if any rows were affected
+    IF FOUND THEN
+        result := json_build_object(
+            'status', TRUE,
+            'message', 'Product soft-deleted successfully!'
+        );
+    ELSE
+        result := json_build_object(
+            'status', FALSE,
+            'message', 'No product found with the given ID!'
+        );
+    END IF;
+
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error soft deleting product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT delete_product(16);```
+Now this function returns a success or failure message to the caller in JSON format.
+Returned json message from the function:
+![image info](fast_api_advance/images/readme_images/soft_delete_funciton_that_returns_json.png)
+
+**RESTORE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+
+```
+DROP FUNCTION restore_product;
+CREATE OR REPLACE FUNCTION restore_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+	result JSON;
+BEGIN
+	UPDATE product
+	SET is_deleted = False
+	WHERE id=p_id AND is_deleted = True;
+
+	IF FOUND THEN
+		result := json_build_object(
+			'status',True,
+			'message','Product restored successfully!'
+		);
+	ELSE
+		result := json_build_object(
+			'status',False,
+			'message','No product found with the given ID!'
+		);
+	
+	END IF;
+	
+	RETURN result;
+
+	EXCEPTION
+
+	WHEN OTHERS THEN
+		RETURN json_build_object(
+			'status',False,
+			'message','Error soft deleting product: ' || SQLERRM
+		);
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT restore_product(16)```
+Now this function returns a success or failure message to the caller in JSON format.
+Returned json message from the function:
+![image info](fast_api_advance/images/readme_images/restore_return_json.png)
+
+**HARD DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
+
+```
+DROP FUNCTION hard_delete_product;
+CREATE OR REPLACE FUNCTION hard_delete_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to hard delete the product
+    DELETE FROM product
+    WHERE id = p_id;
+
+    -- Check if any rows were affected
+    IF FOUND THEN
+        result := json_build_object(
+            'status', TRUE,
+            'message', 'Product hard-deleted successfully!'
+        );
+    ELSE
+        result := json_build_object(
+            'status', FALSE,
+            'message', 'No product found with the given ID!'
+        );
+    END IF;
+
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error hard deleting product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+```
+Usage : ```SELECT hard_delete_product(16);```
+Now this function returns a success or failure message to the caller in JSON format.
+Returned json message from the function:
+![image info](fast_api_advance/images/readme_images/hard_delete_return_json_function.png)
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
