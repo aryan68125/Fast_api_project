@@ -949,7 +949,7 @@ All these tables are gonna form some form of relationship. That's why its called
 ![image info](fast_api_advance/images/readme_images/postgres.png) <br>
 When you install an instance of postgres, what we can do is carve out multiple separate databases i.e we can create a separate database for our project other than the database that is provided by default by postgres after installation.These databases are completely isolated and have nothing to do with one another. <br>
 The diagram below will help you to understand more of what is discussed above : 
-![image info](fast_api_advance/images/readme_images/postgres_2_db.png)
+![image info](fast_api_advance/images/readme_images/postgres_2_db.png) <br>
 The image above shows that the postgres allows you to carve out multiple databases from a postgres instance.
 - By default every postgres installation comes with one database already created called **"postgres"**
 - This is important because postgres requires you to specify the name of a database to make a connection. So there needs to always be one database.
@@ -1314,7 +1314,7 @@ $$ LANGUAGE plpgsql;
 Usage : ```SELECT insert_product('Washing machine', 15000);```
 Now this function returns a success or failure message to the caller in JSON format.
 Returned json message from the function:
-![image info](fast_api_advance/images/readme_images/json_message_returned_by_user.png)
+![image info](fast_api_advance/images/readme_images/json_message_returned_by_user.png)  <br>
 
 **Explaination:** <br>
 - ```RETURNS JSON AS $$``` : 
@@ -1390,7 +1390,7 @@ $$ LANGUAGE plpgsql;
 Usage : ```SELECT update_product(15,'Front loader washing machine', 45890);```
 Now this function returns a success or failure message to the caller in JSON format.
 Returned json message from the function:
-![image info](fast_api_advance/images/readme_images/UPDATE_message_json.png)
+![image info](fast_api_advance/images/readme_images/UPDATE_message_json.png) <br>
 
 **Explaination**:
 - ```IF FOUND THEN``` : 
@@ -1445,7 +1445,7 @@ $$ LANGUAGE plpgsql;
 Usage : ```SELECT delete_product(16);```
 Now this function returns a success or failure message to the caller in JSON format.
 Returned json message from the function:
-![image info](fast_api_advance/images/readme_images/soft_delete_funciton_that_returns_json.png)
+![image info](fast_api_advance/images/readme_images/soft_delete_funciton_that_returns_json.png) <br>
 
 ### **RESTORE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 
@@ -1488,7 +1488,7 @@ $$ LANGUAGE plpgsql;
 Usage : ```SELECT restore_product(16)```
 Now this function returns a success or failure message to the caller in JSON format.
 Returned json message from the function:
-![image info](fast_api_advance/images/readme_images/restore_return_json.png)
+![image info](fast_api_advance/images/readme_images/restore_return_json.png) <br>
 
 ### **HARD DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
 
@@ -1530,7 +1530,7 @@ $$ LANGUAGE plpgsql;
 Usage : ```SELECT hard_delete_product(16);```
 Now this function returns a success or failure message to the caller in JSON format.
 Returned json message from the function:
-![image info](fast_api_advance/images/readme_images/hard_delete_return_json_function.png)
+![image info](fast_api_advance/images/readme_images/hard_delete_return_json_function.png) <br>
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
