@@ -1044,6 +1044,15 @@ CREATE TABLE product (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 ```
+**Explaination** : 
+- The ```created_at``` column stores the date and time when a row is created. The ```DEFAULT CURRENT_TIMESTAMP``` sets its initial value to the current date and time at the moment of row insertion. The ```NOT NULL``` constraint ensures this column always has a value
+- What is ```TIMESTAMP```?
+    - ```TIMESTAMP``` is a data type in SQL that stores both date and time information.
+    - Format: ```YYYY-MM-DD HH:MI:SS``` (year, month, day, hour, minute, second)
+    - Use Case: It is commonly used to track events or record when an action occurs.
+- What is ```CURRENT_TIMESTAMP```?
+    - ```CURRENT_TIMESTAMP``` is a special SQL function that retrieves the current date and time from the system at the moment it is called.
+    - It ensures that the column value automatically reflects the precise time of the row insertion.
 ### **Add a column to an existing table**
 ```
 ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
