@@ -1120,6 +1120,11 @@ The primary difference between stored procedures and database functions lies in 
 | Can perform DML operations (e.g., `INSERT`, `UPDATE`, `DELETE`) and manage transactions. | Typically does not perform DML operations but focuses on returning computed values or results. (In PostgreSQL, functions can modify data, but this is discouraged for functions designed to be deterministic.) |
 
 ---
+**NOTE :** DML (Data Manipulation Language) refers to a subset of SQL commands used to manipulate data stored in a database. These operations interact with the data itself, such as inserting, updating, deleting, or retrieving records from tables. <br>
+- Key Characteristics of DML Operations:
+    - Impact on Data: DML commands directly manipulate the content (data) in the database tables.
+    - Reversible: Except for DELETE operations (unless backups exist), DML changes can typically be undone using transactions (ROLLBACK).
+    - Transactional: DML operations are part of transactions and can be committed (COMMIT) or rolled back (ROLLBACK).
 
 ### **5. Parameters**
 | **Stored Procedure**                 | **Database Function**                           |
