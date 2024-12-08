@@ -1033,6 +1033,17 @@ price NUMERIC NOT NULL,
 is_deleted BOOLEAN DEFAULT FALSE
 );
 ```
+### **Create a table that have a created_at column that stores the current date and time of the record when it was created.**
+```
+CREATE TABLE product (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price NUMERIC NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    is_on_sale BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+```
 ### **Add a column to an existing table**
 ```
 ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
