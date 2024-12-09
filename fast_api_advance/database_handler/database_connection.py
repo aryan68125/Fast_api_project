@@ -27,6 +27,7 @@ def database_conn():
                 )
             cursor = db_conn.cursor()
             print("Database connection successful!")
+            return db_conn, cursor
             break
         except Exception as e:
             time.sleep(2)
