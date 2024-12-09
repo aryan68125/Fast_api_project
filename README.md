@@ -1917,6 +1917,114 @@ Get one row as a result from ```read_product_sp``` stored procedure
     - Storage and Querying: If your application involves lots of querying or updating of ```JSON``` data, using ```JSONB``` will yield better performance than ```JSON```.
 
 **SEARCH DATA FROM A TABLE STORED PROCEDURE**
+```
+CREATE OR REPLACE PROCEDURE search_product_sp(
+    p_name VARCHAR DEFAULT NULL,
+    p_price NUMERIC DEFAULT NULL,
+    p_created_at TIMESTAMP DEFAULT NULL
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    -- Build dynamic query for searching based on provided parameters
+    IF p_name IS NOT NULL AND p_price IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND price = p_price
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL AND p_price IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND price = p_price
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_price IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE price = p_price
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND is_deleted = FALSE;
+
+    ELSIF p_price IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE price = p_price
+          AND is_deleted = FALSE;
+
+    ELSIF p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE created_at = p_created_at
+          AND is_deleted = FALSE;
+    ELSE
+        -- If no parameters provided, return all products
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE is_deleted = FALSE;
+    END IF;
+
+    -- Return the result
+    RAISE NOTICE '%', result;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle errors
+        RAISE NOTICE 'Error: %', SQLERRM;
+END;
+$$;
+```
+Usage : <br>
+Search by price : <br>
+```
+CALL search_product_sp(p_price := 156000);
+```
+output : <br>
+![image info](fast_api_advance/images/readme_images/search_by_price_output_stored_procedure.png) 
+
+<br>
+
+Search by name : <br>
+```
+CALL search_product_sp(p_name := 'hair');
+```
+output : <br>
+![image info](fast_api_advance/images/readme_images/search_name_search_stored_procedure.png)
+
+<br>
+
+Search by date : <br>
+```
+CALL search_product_sp(p_created_at := '2024-12-05T16:49:14.243054+05:30');
+```
+output : <br>
+![image info](fast_api_advance/images/readme_images/search_by_date_stored_procedure.png) 
+
+<br>
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
