@@ -62,3 +62,23 @@ $$;
 -- usage --
 CALL soft_delete_product_sp(27);
 SELECT * FROM product ORDER BY id ASC;
+
+-- RESTORE SOFT DELETED DATA IN A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE retore_data_product_sp(p_id INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+	UPDATE product SET is_deleted = False
+	WHERE id = p_id AND is_deleted = True;
+	IF FOUND THEN
+		RAISE NOTICE 'success';
+	ELSE 
+		RAISE NOTICE 'not found';
+	END IF;
+EXCEPTION 
+	 WHEN OTHERS THEN
+	 	RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL retore_data_product_sp(27);
+SELECT * FROM product ORDER BY id ASC;
