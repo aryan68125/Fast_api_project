@@ -1916,6 +1916,8 @@ Get one row as a result from ```read_product_sp``` stored procedure
     - Consistency: ```JSONB``` stores data in a normalized way, eliminating issues like redundant whitespace or key order. This makes it easier to compare and search ```JSONB``` data accurately.
     - Storage and Querying: If your application involves lots of querying or updating of ```JSON``` data, using ```JSONB``` will yield better performance than ```JSON```.
 
+**SEARCH DATA FROM A TABLE STORED PROCEDURE**
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
