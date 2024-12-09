@@ -2026,6 +2026,14 @@ output : <br>
 
 <br>
 
+## Psycopg 2 
+To install Psycopg2 in your python environment. You need to follow the guide below: <br>
+https://www.psycopg.org/docs/install.html#quick-install
+
+<br>
+
+
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 

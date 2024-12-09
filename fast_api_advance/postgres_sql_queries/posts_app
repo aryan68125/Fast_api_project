@@ -1,0 +1,15 @@
+CREATE TABLE posts (
+id SERIAL PRIMARY KEY,
+title VARCHAR(255),
+content TEXT,
+is_published BOOLEAN DEFAULT True,
+rating INTEGER,
+is_deleted BOOLEAN DEFAULT False,
+created_at DATE DEFAULT CURRENT_DATE
+);
+
+SELECT * FROM posts;
+
+INSERT INTO posts (title,content) VALUES 
+('First post','Some intreseting stuff'),
+('Second post','This is my second post');
