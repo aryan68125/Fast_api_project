@@ -2033,13 +2033,108 @@ https://www.psycopg.org/docs/install.html#quick-install
 <br>
 
 ### Create a utility to establish a database connection in FastAPI
+Directory structure : 
+```
+fast_api_advance
+├── blog_app
+│   ├── __init__.py
+│   ├── main.py
+│   └── __pycache__
+│       ├── __init__.cpython-312.pyc
+│       └── main.cpython-312.pyc
+├── database_handler
+│   ├── database_connection.py
+│   ├── __init__.py
+│   └── __pycache__
+│       ├── database_connection.cpython-312.pyc
+│       └── __init__.cpython-312.pyc
+├── dummy_data_CRUD.py
+├── images
+│   └── readme_images
+│       ├── crud.png
+│       ├── Database_and_dbms.png
+│       ├── Database_datatypes.png
+│       ├── database_tables.png
+│       ├── database_tables_rows_col.png
+│       ├── delete_stored_procedure_return_message.png
+│       ├── get_all_rows_from_table_read_stored_procedure.png
+│       ├── hard_delete_return_json_function.png
+│       ├── hard_delete_stored_procedure_return_message.png
+│       ├── insert_return_statement_from_stored_procedure.png
+│       ├── json_message_returned_by_user.png
+│       ├── null_constraints.png
+│       ├── path_operation.png
+│       ├── pk_email.png
+│       ├── pk.png
+│       ├── postgres_2_db.png
+│       ├── postgres.png
+│       ├── post_request.png
+│       ├── read_all_function_returns_json.png
+│       ├── read_one_function_return_json.png
+│       ├── restore_data_stored_procedure_return_message.png
+│       ├── restore_return_json.png
+│       ├── returns_one_selected_row_read_stored_procedure.png
+│       ├── search_by_date_stored_procedure.png
+│       ├── search_by_price_output_stored_procedure.png
+│       ├── search_name_search_stored_procedure.png
+│       ├── soft_delete_funciton_that_returns_json.png
+│       ├── SQL_DBMS.png
+│       ├── Types_of_databases.png
+│       ├── unique_constraints.png
+│       ├── UPDATE_message_json.png
+│       └── update_stored_procedure_return_message.png
+├── naive_main_code.py
+├── postgres_sql_queries
+│   ├── database_functions_that_returns_results_in_json
+│   ├── posts_app
+│   ├── raw_sql
+│   ├── Stored procedures
+│   └── Stored_procedures
+├── posts_app
+│   ├── __init__.py
+│   ├── main.py
+│   └── __pycache__
+│       ├── __init__.cpython-312.pyc
+│       └── main.cpython-312.pyc
+├── __pycache__
+│   ├── Blog.cpython-312.pyc
+│   └── main.cpython-312.pyc
+├── pydantic_custom_models
+│   ├── Blog.py
+│   ├── __init__.py
+│   ├── Posts.py
+│   └── __pycache__
+│       ├── Blog.cpython-312.pyc
+│       ├── __init__.cpython-312.pyc
+│       └── Posts.cpython-312.pyc
+└── utility
+    ├── common_error_messages.py
+    ├── common_response.py
+    ├── common_success_messages.py
+    ├── dummy_data.py
+    ├── __init__.py
+    └── __pycache__
+        ├── common_error_messages.cpython-312.pyc
+        ├── common_response.cpython-312.pyc
+        ├── common_success_messages.cpython-312.pyc
+        ├── dummy_data.cpython-312.pyc
+        └── __init__.cpython-312.pyc
+```
+**database_connection.py** <br>
 This file is responsible for creating a connection to the database and then after that we can perform operations on the actual data in the database. <br>
-fast_api_advance/database_handler/database_connection.py 
+file directory : fast_api_advance/database_handler/database_connection.py
 ```
 import psycopg2
 from decouple import config
 
 from psycopg2.extras import RealDictCursor
+
+from utility.common_success_messages import (
+    DATABASE_CONN_SUCCESS
+)
+from utility.common_error_messages import (
+    DATABASE_CONN_ERR
+)
 
 def database_conn():
     try:
@@ -2052,14 +2147,38 @@ def database_conn():
             )
         cursor = db_conn.cursor()
         print("Database connection successful!")
+        return {'status':True,'message':DATABASE_CONN_SUCCESS}
     except Exception as e:
-        return {'status':False,'error':e}
+        print(e)
+        return {'status':False,'error':e,'message':DATABASE_CONN_ERR}
 ```
 - ```cursor_factory=RealDictCursor``` This line of code will give you the column name along with all the values when you make a query to retrieve a bunch of rows from a database. <br>
 **NOTE :** <br> 
 There is one thing that is weird with this library is that when you make a query to retrieve a bunch of rows from a database it doesn't include the column name, It just gives you the values of the column.
 - ```cursor``` will be used to execute SQL statements in an app in FastAPI
+**main.py** <br>
+file directory : fast_api_advance/posts_app/main.py
+```
+from fastapi import FastAPI, status
 
+#utilities
+from utility.common_response import response
+
+#Pydantic models 
+from pydantic_custom_models import Posts
+
+#import db handler 
+from database_handler.database_connection import database_conn
+
+app = FastAPI()
+
+# call this function establish connection with the database
+database_conn()
+
+@app.get('/')
+def home():
+    return response(status=status.HTTP_200_OK,message="This is a posts app homepage")
+```
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
