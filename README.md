@@ -1669,6 +1669,49 @@ Now this function returns a success or failure message to the caller in JSON for
 Returned json message from the function:
 ![image info](fast_api_advance/images/readme_images/read_one_function_return_json.png) <br>
 
+## PostgreSQL Stored Procedures
+
+**INSERT DATA INTO A TABLE STORED PROCEDURE**
+```
+CREATE OR REPLACE PROCEDURE insert_product_sp(p_name VARCHAR, p_price NUMERIC, inventory INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+    -- Try to insert the product
+    INSERT INTO product (name, price, inventory) VALUES (p_name, p_price, inventory);
+    
+    -- Return success message
+    RAISE NOTICE '{"status": true, "message": "Product inserted!"}';
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Catch any error and return failure message
+        RAISE NOTICE '{"status": false, "message": "%"}', SQLERRM;
+END;
+$$;
+```
+Usage : ```CALL insert_product_sp('soap denspenser', 700, 47);``` <br>
+Returned json message from the stored procedure:
+![image info](fast_api_advance/images/readme_images/insert_return_statement_from_stored_procedure.png) <br>
+
+**Explaination :** <br>
+- What is ```CALL```?
+    - ```CALL``` is a SQL statement used to invoke (execute) a stored procedure in PostgreSQL.
+    - Unlike functions, stored procedures don’t return values directly. Instead, they are used for performing actions such as inserting, updating, or deleting data.
+    - You specify the name of the procedure (insert_product_sp) and provide the required input parameters (p_name, p_price, and inventory).
+    - PostgreSQL executes the logic within the procedure, performing any operations (e.g., inserting data into a table).
+    - In this case, CALL is used to execute the insert_product_sp procedure, which inserts a new record into the product table.
+    - Procedures are ideal for encapsulating business logic, such as inserting data with error handling.
+    - CALL executes the encapsulated logic, making it reusable and easier to maintain.
+- What is ```RAISE NOTICE```?
+    - RAISE NOTICE is a PostgreSQL statement that outputs a message to the client.
+    - It's primarily used for debugging or providing information about the procedure’s execution.
+    - The RAISE NOTICE statement can include placeholders (like %) and variables or expressions.
+    - ```RAISE NOTICE '{"status": true, "message": "Product inserted!"}';``` <br>
+    This outputs a structured success message when the product is inserted.
+    - ```RAISE NOTICE '{"status": false, "message": "%"}', SQLERRM;``` <br>
+    If an error occurs, this outputs the failure message along with the error details (SQLERRM).
+    
+
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
