@@ -147,3 +147,96 @@ $$;
 -- usage --
 CALL read_product_sp();
 CALL read_product_sp(9);
+
+
+
+-- SEARCH DATA IN A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE search_product_sp(
+    p_name VARCHAR DEFAULT NULL,
+    p_price NUMERIC DEFAULT NULL,
+    p_created_at TIMESTAMP DEFAULT NULL
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    -- Build dynamic query for searching based on provided parameters
+    IF p_name IS NOT NULL AND p_price IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND price = p_price
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL AND p_price IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND price = p_price
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_price IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE price = p_price
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND is_deleted = FALSE;
+
+    ELSIF p_price IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE price = p_price
+          AND is_deleted = FALSE;
+
+    ELSIF p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE created_at = p_created_at
+          AND is_deleted = FALSE;
+    ELSE
+        -- If no parameters provided, return all products
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE is_deleted = FALSE;
+    END IF;
+
+    -- Return the result
+    RAISE NOTICE '%', result;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle errors
+        RAISE NOTICE 'Error: %', SQLERRM;
+END;
+$$;
+-- usage --
+-- CALL search_product_sp(
+--     p_name VARCHAR DEFAULT NULL,
+--     p_price NUMERIC DEFAULT NULL,
+--     p_created_at TIMESTAMP DEFAULT NULL
+-- )
+CALL search_product_sp(p_price := 156000);
+CALL search_product_sp(p_name := 'hair');
+CALL search_product_sp(p_created_at := '2024-12-09T10:08:33.911979+05:30');
+CALL read_product_sp();
