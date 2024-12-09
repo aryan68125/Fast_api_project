@@ -1689,8 +1689,10 @@ END;
 $$;
 ```
 Usage : ```CALL insert_product_sp('soap denspenser', 700, 47);``` <br>
-Returned json message from the stored procedure:
+Returned message from the stored procedure is not a json but in text format:
 ![image info](fast_api_advance/images/readme_images/insert_return_statement_from_stored_procedure.png) <br>
+
+**NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
 
 **Explaination :** <br>
 - What is ```CALL```?
@@ -1709,8 +1711,16 @@ Returned json message from the stored procedure:
     This outputs a structured success message when the product is inserted.
     - ```RAISE NOTICE '{"status": false, "message": "%"}', SQLERRM;``` <br>
     If an error occurs, this outputs the failure message along with the error details (SQLERRM).
-    
 
+**UPDATE DATA INTO A TABLE STORED PROCEDURE**
+```
+
+```
+Usage : ``` ``` <br>
+Returned message from the stored procedure is not a json but in text format:
+![image info]() <br>
+
+**NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
