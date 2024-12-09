@@ -1680,11 +1680,11 @@ BEGIN
     INSERT INTO product (name, price, inventory) VALUES (p_name, p_price, inventory);
     
     -- Return success message
-    RAISE NOTICE '{"status": true, "message": "Product inserted!"}';
+    RAISE NOTICE 'success';
 EXCEPTION
     WHEN OTHERS THEN
         -- Catch any error and return failure message
-        RAISE NOTICE '{"status": false, "message": "%"}', SQLERRM;
+        RAISE NOTICE '%', SQLERRM;
 END;
 $$;
 ```
