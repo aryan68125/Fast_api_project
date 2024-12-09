@@ -2135,22 +2135,24 @@ from utility.common_success_messages import (
 from utility.common_error_messages import (
     DATABASE_CONN_ERR
 )
+import time
 
 def database_conn():
-    try:
-        db_conn = psycopg2.connect(
-                host=config('DB_IP'),
-                database=config('DB_NAME'),
-                user=config('DB_USERNAME'),
-                password=config('DB_PASSWORD'),
-                cursor_factory=RealDictCursor
-            )
-        cursor = db_conn.cursor()
-        print("Database connection successful!")
-        return {'status':True,'message':DATABASE_CONN_SUCCESS}
-    except Exception as e:
-        print(e)
-        return {'status':False,'error':e,'message':DATABASE_CONN_ERR}
+    while True:
+        try:
+            db_conn = psycopg2.connect(
+                    host=config('DB_IP'),
+                    database=config('DB_NAME'),
+                    user=config('DB_USERNAME'),
+                    password=config('DB_PASSWORD'),
+                    cursor_factory=RealDictCursor
+                )
+            cursor = db_conn.cursor()
+            print("Database connection successful!")
+            break
+        except Exception as e:
+            time.sleep(2)
+            print(e)
 ```
 - ```cursor_factory=RealDictCursor``` This line of code will give you the column name along with all the values when you make a query to retrieve a bunch of rows from a database. <br>
 **NOTE :** <br> 
