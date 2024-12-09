@@ -880,6 +880,7 @@ Now each of the databases implements SQL in a slightly different way. So you may
 
 ## SQL : Structured Query Language
 ![image info](fast_api_advance/images/readme_images/SQL_DBMS.png)
+<br>
 SQL is a language that is used to communicate with the DBMS.
 - So when we want to perform an operation we are gonna send an sepcific SQL statement to the DBMS 
 - DBMS is then gonna take that statement and then perform the operation on the database
@@ -887,6 +888,7 @@ SQL is a language that is used to communicate with the DBMS.
 
 ## Database Tables : Concept of tables
 ![image info](fast_api_advance/images/readme_images/database_tables.png)
+<br>
 A table is a representation of a subject or event in an application. <br>
 Lets take an example of an e-commerce application : <br>
 - Users table : Consists all of the records for all the users
@@ -898,6 +900,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 ### Rows and Columns
 ![image info](fast_api_advance/images/readme_images/database_tables_rows_col.png)
+<br>
 - A table is made up of columns and rows
 - Each column represents a different attribute
 - Each row represents a different entry in the table
@@ -906,6 +909,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 ### DataTypes in a database tables
 ![image info](fast_api_advance/images/readme_images/Database_datatypes.png)
+<br>
 - Databases have datatypes just like any programming language.
 - When create a column in a database table you need to specify what kind of data type that column is gonna store in a table.
 
@@ -913,6 +917,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 ### Primary keys in a database table
 ![image info](fast_api_advance/images/readme_images/pk.png)
+<br>
 - When we create a table we have to specify something called a primary key.
 - Primary key is a column or a group of columns that uniquely identifies each row in a table.
 - We need to tell postgres how can we identify each enty in a table.
@@ -923,6 +928,7 @@ All these tables are gonna form some form of relationship. That's why its called
 <br>
 
 ![image info](fast_api_advance/images/readme_images/pk_email.png)
+<br>
 - Normally the primary key is the id column as shown in the previous example picture just above this section but that's not always the case
 - The table doesn't even have to have the id column. There are certain instances where you may not want an id column.
 - If you don't have an id column or you may not want an id column there must be some column in a table that is able to uniquely identify the entries in that table.
@@ -933,6 +939,7 @@ All these tables are gonna form some form of relationship. That's why its called
 ### **Constraints in the database table**
 #### Unique constrains in a database tables
 ![image info](fast_api_advance/images/readme_images/unique_constraints.png)
+<br>
 - We can add an extra constraints on any column in a database table.
 - A unique constraints can be applied to any column to make sure every record has a unique value for that column.
 
@@ -940,6 +947,7 @@ All these tables are gonna form some form of relationship. That's why its called
 
 #### Null constrains in a database tables
 ![image info](fast_api_advance/images/readme_images/null_constraints.png)
+<br>
 - When it comes to creating columns by default postgres allows you to leave a column blank. In the back-end postgres will put in a value of null if no value is supplied to that column in that particular entry of the table.
 - We can use null constraint to tell postgres to prevent the creation of an entry in the table if a column in that entry is not provided with any value.
 - So for example if we have a users table and let's suppose we have a null constraint set on phone number column of that table then if we try to create an entry of user without supplying the user's phone number then the postgres will check and see that the phone number's column has a not-null constraint set to it and it will throw an error.
@@ -950,7 +958,8 @@ All these tables are gonna form some form of relationship. That's why its called
 ![image info](fast_api_advance/images/readme_images/postgres.png) <br>
 When you install an instance of postgres, what we can do is carve out multiple separate databases i.e we can create a separate database for our project other than the database that is provided by default by postgres after installation.These databases are completely isolated and have nothing to do with one another. <br>
 The diagram below will help you to understand more of what is discussed above : 
-![image info](fast_api_advance/images/readme_images/postgres_2_db.png) <br>
+![image info](fast_api_advance/images/readme_images/postgres_2_db.png) 
+<br>
 The image above shows that the postgres allows you to carve out multiple databases from a postgres instance.
 - By default every postgres installation comes with one database already created called **"postgres"**
 - This is important because postgres requires you to specify the name of a database to make a connection. So there needs to always be one database.
@@ -1340,7 +1349,9 @@ $$ LANGUAGE plpgsql;
 Usage : ```SELECT insert_product('Washing machine', 15000);```
 Now this function returns a success or failure message to the caller in JSON format.
 Returned json message from the function:
-![image info](fast_api_advance/images/readme_images/json_message_returned_by_user.png)  <br>
+![image info](fast_api_advance/images/readme_images/json_message_returned_by_user.png)  
+
+<br>
 
 **Explaination:** <br>
 - ```RETURNS JSON AS $$``` : 
