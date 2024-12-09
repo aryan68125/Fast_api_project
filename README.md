@@ -1788,20 +1788,43 @@ Returned message from the stored procedure is not a json but in text format:
 ```
 CREATE OR REPLACE PROCEDURE hard_delete_product_sp(p_id INTEGER)
 LANGUAGE plpgsql AS $$
+DECLARE 
+	rows_deleted INTEGER;
 BEGIN
 	DELETE FROM product WHERE id = p_id;
-	RAISE NOTICE 'success';
+	
+	GET DIAGNOSTICS rows_deleted = ROW_COUNT;
+
+	IF rows_deleted = 0 THEN
+		RAISE NOTICE 'not found!';
+	ELSE
+		RAISE NOTICE 'success';
+	END IF;
 EXCEPTION 
 	WHEN OTHERS THEN
 		RAISE NOTICE '"%"', SQLERRM;
 END;
 $$;
 ```
-Usage : ```CALL hard_delete_product_sp(27);``` <br>
+Usage : ```CALL hard_delete_product_sp(25);``` <br>
 Returned message from the stored procedure is not a json but in text format:
 ![image info](fast_api_advance/images/readme_images/hard_delete_stored_procedure_return_message.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
+
+**Explaination :** <br>
+```GET DIAGNOSTICS``` is a special SQL command used in PostgreSQL to retrieve information about the current execution of a SQL statement, particularly about the results of the last SQL operation. It's typically used in stored procedures or functions to capture various details about the execution, such as the number of rows affected by an operation or error details.
+- ```GET```
+    - ```GET``` is a keyword in the ```GET DIAGNOSTICS``` statement. It indicates that you are requesting specific diagnostic information.
+- ```DIAGNOSTICS```
+    - ```DIAGNOSTICS``` is the part of the statement that specifies you're accessing diagnostic information about the current session or statement.
+- ```ROW_COUNT```
+    - ```ROW_COUNT``` is one of the diagnostic variables that can be retrieved by the ```GET DIAGNOSTICS``` statement.
+    - It represents the number of rows affected by the last SQL command (such as ```INSERT```, ```UPDATE```, ```DELETE```, etc.).
+- Why it's used: It's used to determine if the ```DELETE``` operation actually removed any rows. If ```ROW_COUNT``` is 0, it means no rows were deleted (likely because the record with that ID did not exist).
+- Without ```GET DIAGNOSTICS```, you wouldn't be able to capture how many rows were affected, which is important for error handling and giving the user feedback (like showing a "Not Found" message when no rows were deleted). <br>
+
+
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 

@@ -91,14 +91,32 @@ SELECT * FROM product ORDER BY id ASC;
 -- HARD DELETE DATA FROM A TABLE STORED PROCEDURE --
 CREATE OR REPLACE PROCEDURE hard_delete_product_sp(p_id INTEGER)
 LANGUAGE plpgsql AS $$
+DECLARE 
+	rows_deleted INTEGER;
 BEGIN
 	DELETE FROM product WHERE id = p_id;
-	RAISE NOTICE 'success';
+	
+	GET DIAGNOSTICS rows_deleted = ROW_COUNT;
+
+	IF rows_deleted = 0 THEN
+		RAISE NOTICE 'not found!';
+	ELSE
+		RAISE NOTICE 'success';
+	END IF;
 EXCEPTION 
 	WHEN OTHERS THEN
 		RAISE NOTICE '"%"', SQLERRM;
 END;
 $$;
 -- usage --
-CALL hard_delete_product_sp(27);
+CALL hard_delete_product_sp(25);
 SELECT * FROM product ORDER BY id ASC;
+
+
+
+-- READ ALL DATA FROM A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE read_all_product_sp()
+LANGUAGE plpgsql AS $$
+BEGIN
+	SELECT * FROM product ORDER BY id ASC;
+	
