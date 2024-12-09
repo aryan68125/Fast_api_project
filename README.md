@@ -1684,7 +1684,7 @@ BEGIN
 EXCEPTION
     WHEN OTHERS THEN
         -- Catch any error and return failure message
-        RAISE NOTICE '%', SQLERRM;
+        RAISE NOTICE '"%"', SQLERRM;
 END;
 $$;
 ```
@@ -1714,11 +1714,25 @@ Returned message from the stored procedure is not a json but in text format:
 
 **UPDATE DATA INTO A TABLE STORED PROCEDURE**
 ```
-
+CREATE OR REPLACE PROCEDURE update_product_sp(p_id INTEGER,p_name VARCHAR, p_price NUMERIC, p_inventory INTEGER, p_is_on_sale BOOLEAN)
+LANGUAGE plpgsql AS $$
+BEGIN
+	UPDATE product SET name = p_name, price = p_price, inventory=p_inventory, is_on_sale=p_is_on_sale
+	WHERE id = p_id AND is_deleted = False;
+	IF FOUND THEN
+		RAISE NOTICE 'success';
+	ELSE
+		RAISE NOTICE 'not found';
+	END IF ;
+EXCEPTION 
+	WHEN OTHERS THEN 
+		RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
 ```
-Usage : ``` ``` <br>
+Usage : ```CALL update_product_sp(22, 'Hair Drier', 750,250,True)``` <br>
 Returned message from the stored procedure is not a json but in text format:
-![image info]() <br>
+![image info](fast_api_advance/images/readme_images/update_stored_procedure_return_message.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
 
