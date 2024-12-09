@@ -21,6 +21,7 @@ SELECT * FROM product ORDER BY id ASC;
 -- DELETE FROM product WHERE id =  26;
 
 
+
 -- UPDATE DATA INTO A TABLE STORED PROCEDURE --
 CREATE OR REPLACE PROCEDURE update_product_sp(p_id INTEGER,p_name VARCHAR, p_price NUMERIC, p_inventory INTEGER, p_is_on_sale BOOLEAN)
 LANGUAGE plpgsql AS $$
@@ -39,3 +40,25 @@ END;
 $$;
 -- usage --
 CALL update_product_sp(22, 'Hair Drier', 750,250,True)
+SELECT * FROM product ORDER BY id ASC;
+
+
+-- SOFT DELETE DATA FROM A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE soft_delete_product_sp(p_id INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+	UPDATE product SET is_deleted = TRUE
+	WHERE id = p_id AND is_deleted = False;
+	IF FOUND THEN 
+		RAISE NOTICE 'success';
+	ELSE
+		RAISE NOTICE 'not found';
+	END IF ;
+EXCEPTION 
+	WHEN OTHERS THEN 
+		RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL soft_delete_product_sp(27);
+SELECT * FROM product ORDER BY id ASC;

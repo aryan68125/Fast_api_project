@@ -1736,6 +1736,31 @@ Returned message from the stored procedure is not a json but in text format:
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
 
+**SOFT DELETE DATA FROM A TABLE STORED PROCEDURE**
+```
+CREATE OR REPLACE PROCEDURE soft_delete_product_sp(p_id INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+	UPDATE product SET is_deleted = TRUE
+	WHERE id = p_id AND is_deleted = False;
+	IF FOUND THEN 
+		RAISE NOTICE 'success';
+	ELSE
+		RAISE NOTICE 'not found';
+	END IF ;
+EXCEPTION 
+	WHEN OTHERS THEN 
+		RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+```
+Usage : ```CALL soft_delete_product_sp(27);``` <br>
+Returned message from the stored procedure is not a json but in text format:
+![image info](fast_api_advance/images/readme_images/delete_stored_procedure_return_message.png) <br>
+
+**NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
+
+
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
