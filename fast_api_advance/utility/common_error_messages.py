@@ -1,0 +1,1 @@
+DATABASE_CONN_ERR = "Database connection failed!"

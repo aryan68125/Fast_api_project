@@ -2032,6 +2032,33 @@ https://www.psycopg.org/docs/install.html#quick-install
 
 <br>
 
+### Create a utility to establish a database connection in FastAPI
+This file is responsible for creating a connection to the database and then after that we can perform operations on the actual data in the database. <br>
+fast_api_advance/database_handler/database_connection.py 
+```
+import psycopg2
+from decouple import config
+
+from psycopg2.extras import RealDictCursor
+
+def database_conn():
+    try:
+        db_conn = psycopg2.connect(
+                host=config('DB_IP'),
+                database=config('DB_NAME'),
+                user=config('DB_USERNAME'),
+                password=config('DB_PASSWORD'),
+                cursor_factory=RealDictCursor
+            )
+        cursor = db_conn.cursor()
+        print("Database connection successful!")
+    except Exception as e:
+        return {'status':False,'error':e}
+```
+- ```cursor_factory=RealDictCursor``` This line of code will give you the column name along with all the values when you make a query to retrieve a bunch of rows from a database. <br>
+**NOTE :** <br> 
+There is one thing that is weird with this library is that when you make a query to retrieve a bunch of rows from a database it doesn't include the column name, It just gives you the values of the column.
+- ```cursor``` will be used to execute SQL statements in an app in FastAPI
 
 
 ## Pydantic Schemas [Handling (POST) request]
