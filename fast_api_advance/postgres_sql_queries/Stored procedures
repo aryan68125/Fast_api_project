@@ -43,6 +43,7 @@ CALL update_product_sp(22, 'Hair Drier', 750,250,True)
 SELECT * FROM product ORDER BY id ASC;
 
 
+
 -- SOFT DELETE DATA FROM A TABLE STORED PROCEDURE --
 CREATE OR REPLACE PROCEDURE soft_delete_product_sp(p_id INTEGER)
 LANGUAGE plpgsql AS $$
@@ -63,6 +64,8 @@ $$;
 CALL soft_delete_product_sp(27);
 SELECT * FROM product ORDER BY id ASC;
 
+
+
 -- RESTORE SOFT DELETED DATA IN A TABLE STORED PROCEDURE --
 CREATE OR REPLACE PROCEDURE retore_data_product_sp(p_id INTEGER)
 LANGUAGE plpgsql AS $$
@@ -81,4 +84,21 @@ END;
 $$;
 -- usage --
 CALL retore_data_product_sp(27);
+SELECT * FROM product ORDER BY id ASC;
+
+
+
+-- HARD DELETE DATA FROM A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE hard_delete_product_sp(p_id INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+	DELETE FROM product WHERE id = p_id;
+	RAISE NOTICE 'success';
+EXCEPTION 
+	WHEN OTHERS THEN
+		RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL hard_delete_product_sp(27);
 SELECT * FROM product ORDER BY id ASC;
