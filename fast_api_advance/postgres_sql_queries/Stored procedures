@@ -1,0 +1,24 @@
+-- STORED PROCEDURES --
+
+-- INSERT DATA INTO A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE insert_product_sp(p_name VARCHAR, p_price NUMERIC, inventory INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+    -- Try to insert the product
+    INSERT INTO product (name, price, inventory) VALUES (p_name, p_price, inventory);
+    
+    -- Return success message
+    RAISE NOTICE '{"status": true, "message": "Product inserted!"}';
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Catch any error and return failure message
+        RAISE NOTICE '{"status": false, "message": "%"}', SQLERRM;
+END;
+$$;
+-- usage --
+CALL insert_product_sp('Air purifier', 7000, 52);
+SELECT * FROM product ORDER BY id ASC;
+
+
+-- UPDATE DATA INTO A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE update_product_sp(p_name VARCHAR, p_price NUMERIC, )
