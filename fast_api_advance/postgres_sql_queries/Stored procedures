@@ -115,8 +115,35 @@ SELECT * FROM product ORDER BY id ASC;
 
 
 -- READ ALL DATA FROM A TABLE STORED PROCEDURE --
-CREATE OR REPLACE PROCEDURE read_all_product_sp()
+CREATE OR REPLACE PROCEDURE read_product_sp(p_id INTEGER DEFAULT NULL)
 LANGUAGE plpgsql AS $$
+DECLARE
+	result JSONB;
 BEGIN
-	SELECT * FROM product ORDER BY id ASC;
-	
+	IF p_id IS NULL THEN
+		SELECT jsonb_agg(row_to_json(product))
+		INTO result
+		FROM product
+		WHERE is_deleted = False;
+
+		RAISE NOTICE '%', result;
+	ELSE
+		SELECT row_to_json(product)
+		INTO result
+		FROM product
+		WHERE id = p_id AND is_deleted = False;
+
+		IF result IS NULL THEN
+			RAISE NOTICE 'not found!';
+		ELSE
+			RAISE NOTICE '%', result;
+		END IF;
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		RAISE NOTICE '%', SQLERRM;
+END;
+$$;
+-- usage --
+CALL read_product_sp();
+CALL read_product_sp(9);

@@ -1824,7 +1824,97 @@ Returned message from the stored procedure is not a json but in text format:
 - Why it's used: It's used to determine if the ```DELETE``` operation actually removed any rows. If ```ROW_COUNT``` is 0, it means no rows were deleted (likely because the record with that ID did not exist).
 - Without ```GET DIAGNOSTICS```, you wouldn't be able to capture how many rows were affected, which is important for error handling and giving the user feedback (like showing a "Not Found" message when no rows were deleted). <br>
 
+**READ ALL OR ONE DATA FROM A TABLE STORED PROCEDURE**
+```
+CREATE OR REPLACE PROCEDURE read_product_sp(p_id INTEGER DEFAULT NULL)
+LANGUAGE plpgsql AS $$
+DECLARE
+	result JSONB;
+BEGIN
+	IF p_id IS NULL THEN
+		SELECT jsonb_agg(row_to_json(product))
+		INTO result
+		FROM product
+		WHERE is_deleted = False;
 
+		RAISE NOTICE '%', result;
+	ELSE
+		SELECT row_to_json(product)
+		INTO result
+		FROM product
+		WHERE id = p_id AND is_deleted = False;
+
+		IF result IS NULL THEN
+			RAISE NOTICE 'not found!';
+		ELSE
+			RAISE NOTICE '%', result;
+		END IF;
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		RAISE NOTICE '%', SQLERRM;
+END;
+$$;
+```
+Usage : <br>
+sends all rows from the table
+``` 
+CALL read_product_sp(); 
+```
+Sends just one row that is selected by id from the table
+```
+CALL read_product_sp(9);
+``` 
+
+<br>
+
+Returned message from the stored procedure is not a json but in text format: <br>
+Get all rows result from ```read_product_sp``` stored procedure
+![image info](fast_api_advance/images/readme_images/get_all_rows_from_table_read_stored_procedure.png) <br>
+
+Get one row as a result from ```read_product_sp``` stored procedure
+![image info](fast_api_advance/images/readme_images/returns_one_selected_row_read_stored_procedure.png) <br>
+
+**NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
+
+**Explaination :** <br>
+- Explaination of code : 
+    ```
+    SELECT jsonb_agg(row_to_json(product))
+    INTO result
+    FROM product
+    WHERE is_deleted = FALSE;
+
+    RAISE NOTICE '%', result;
+    ```    
+    - ```SELECT jsonb_agg(row_to_json(product))``` 
+        - ```row_to_json(product)```: This function converts a row of the product table (which is a regular database row) into a ```JSON``` object. It converts the columns of the product table into key-value pairs in a ```JSON``` object.
+        - ```jsonb_agg()``` This is an aggregate function that combines multiple ```JSON``` objects into a single ```JSON``` array. It is used here to aggregate all the rows (converted to ```JSON``` objects by ```row_to_json```) into one large ```JSON``` array.
+    - ```INTO result```:
+        - This part assigns the result of the ```SELECT``` query to the ```result``` variable. The ```result``` variable should be of the ```JSONB``` type (as declared earlier in the procedure) to store the aggregated ```JSON``` array.
+    - ```FROM product WHERE is_deleted = FALSE```:
+        - This selects all rows from the product table where the ```is_deleted``` column is set to ```FALSE```. The ```is_deleted``` column is likely a flag to indicate whether the product has been marked for deletion. This ensures that only non-deleted products are included in the ```result```.
+    - ```RAISE NOTICE '%', result```:
+        - This raises a notice (essentially a message) that outputs the value of the result variable, which will be a ```JSON``` array of all non-deleted products. This allows you to view the ```result``` directly in the PostgreSQL log or output.
+- What is ```product``` here?
+    In this query, product refers to the table in the PostgreSQL database. When ```row_to_json(product)``` is used, it is accessing the ```product``` table and converting each row from the table into a ```JSON``` object. Each row represents a product and includes fields such as id, name, price, etc.
+- What is ```JSONB``` and Why Is It Used Instead of ```JSON```?
+    - ```JSON``` and ```JSONB``` are both data types in PostgreSQL used to store ```JSON``` (JavaScript Object Notation) data. However, there are key differences between them:
+    - ```JSON```:
+        - Text-based format for storing ```JSON``` data.
+        - Data is stored exactly as it was input (no internal optimization).
+        - It does not support indexing or fast searching. You have to parse the data to extract values from it.
+    - ```JSONB``` (Binary ```JSON```):
+        - Binary format for storing ```JSON``` data.
+        - ```JSONB``` stores data in a more efficient binary form, allowing for faster processing and more optimized storage.
+        - It supports indexing, so you can index fields within the ```JSONB``` data, which improves search and retrieval performance.
+        - ```JSONB``` also allows for better querying: you can use operators and functions like jsonb_extract_path or jsonb_set to directly interact with and manipulate the ```JSON``` data.
+        - While it may take slightly more time to insert data due to the need for conversion into a binary format, the querying and manipulation of data are much faster than ```JSON```.
+- Why Use ```JSONB``` Instead of ```JSON```?
+    - Performance: ```JSONB``` is generally preferred over ```JSON``` for better performance in terms of search, manipulation, and indexing. If you need to perform complex queries or need to index specific parts of the ```JSON``` document, ```JSONB``` is the better choice.
+    - Indexing: ```JSONB``` supports indexing, which can significantly speed up search queries on ```JSON``` fields, something ```JSON``` does not support efficiently.
+    - Consistency: ```JSONB``` stores data in a normalized way, eliminating issues like redundant whitespace or key order. This makes it easier to compare and search ```JSONB``` data accurately.
+    - Storage and Querying: If your application involves lots of querying or updating of ```JSON``` data, using ```JSONB``` will yield better performance than ```JSON```.
 
 ## Pydantic Schemas [Handling (POST) request]
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
