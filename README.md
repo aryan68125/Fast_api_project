@@ -2250,7 +2250,9 @@ def get_posts():
 <br>
 
 #### Fetch data using database functions inside cursor object in FastAPI end-point function
-**read_posts** : A database function that can fetch one row or all rows from the database table depending on if the id is supplied to the database function or not.
+The method implemented here is a more optimized way <br>
+**read_posts** Database function : A database function that can fetch one row or all rows from the database table depending on if the id is supplied to the database function or not. <br>
+The function will return the response from database in JSONB format
 ```
 CREATE OR REPLACE FUNCTION read_posts(p_id INTEGER DEFAULT NULL)
 RETURNS JSONB AS $$
@@ -2261,7 +2263,7 @@ BEGIN
 		-- fetch one data --
 		SELECT jsonb_build_object(
 			'status',True,
-			'message','Data fetched successfully!',
+			'db_message','Data fetched successfully!',
 			'data', to_jsonb(t)
 		)
 		INTO result
@@ -2272,7 +2274,7 @@ BEGIN
 		IF result IS NULL THEN
 			RETURN jsonb_build_object(
 				'status',False,
-				'message','No data found!',
+				'db_message','No data found!',
 				'data',NULL
 			);
 		END IF;
@@ -2280,7 +2282,7 @@ BEGIN
 		-- fetch all data --
 		SELECT jsonb_build_object(
 			'status',True,
-			'message','Data sent successfully!',
+			'db_message','Data sent successfully!',
 			'data',jsonb_agg(to_jsonb(t))
 		)
 		INTO result
@@ -2293,11 +2295,69 @@ EXCEPTION
 	WHEN OTHERS THEN
 		RETURN jsonb_build_object(
 			'status',False,
-			'message','Error in fetching data : ' || SQLERRM,
+			'db_message','Error in fetching data : ' || SQLERRM,
 			'data',NULL
 		);
 END;
 $$ LANGUAGE plpgsql;
+```
+**database_connection.py** : This file is responsible to establish connection with the database and return a db_conn object. <br>
+Later we can use db_conn object to open and close database connections before and after database operations.
+```
+import psycopg2
+from decouple import config
+
+from psycopg2.extras import RealDictCursor
+
+from utility.common_success_messages import (
+    DATABASE_CONN_SUCCESS
+)
+from utility.common_error_messages import (
+    DATABASE_CONN_ERR
+)
+import time
+
+def database_conn():
+    while True:
+        try:
+            db_conn = psycopg2.connect(
+                    host=config('DB_IP'),
+                    database=config('DB_NAME'),
+                    user=config('DB_USERNAME'),
+                    password=config('DB_PASSWORD'),
+                    cursor_factory=RealDictCursor
+                )
+            # cursor = db_conn.cursor()
+            print("Database connection successfull!")
+            # return db_conn, 
+            return db_conn
+            break
+        except Exception as e:
+            time.sleep(2)
+            print(e)
+```
+**database_query_handler.py** : This file is responsible for handling database queries. 
+- The function accepts the query form main.py file as a parameter ```database_query_handler_fun(query:str)```.
+- The function will open a database connection using this ```db_conn = database_conn()``` and then use ```db_conn```  object to perform sql operations using ```cursor.execute(query)``` and ```cursor.fetchone()```.
+- After the sql operation is done the database connection is closed using ```db_conn.close()```
+```
+from database_handler.database_connection import database_conn
+
+def database_query_handler_fun(query:str):
+    db_conn = None;
+    try:
+        db_conn = database_conn()
+        print(f"db_conn : {db_conn}")
+        cursor = db_conn.cursor()
+        cursor.execute(query)
+        result = cursor.fetchone()
+        return result
+    except Exception as e:
+        print(f"Database query error {e}")
+    finally:
+        if db_conn:
+            db_conn.close()
+            print(f"db_conn : {db_conn}")
 ```
 **main.py** : Get all rows from database table using database functions in FastAPI <br>
 ```
@@ -2317,35 +2377,43 @@ from utility.common_error_messages import (
 #Pydantic models 
 from pydantic_custom_models import Posts
 
-#import db handler 
-from database_handler.database_connection import database_conn
+#import db handler for query management
+from database_handler.database_query_handler import database_query_handler_fun
 
 app = FastAPI()
-
-# call this function establish connection with the database
-db_conn, cursor = database_conn()
 
 @app.get('/')
 def home():
     return response(status=status.HTTP_200_OK,message="This is a posts app homepage")
 
 # Get data using database function written in pgAdmin in cursor
-#Get all data 
+# OPTIMIZED WAY
+# GET ALL RECORDS
 @app.get('/posts')
-def get_posts():
-    cursor.execute("""SELECT read_posts()""")
-    data_rows = cursor.fetchone()
-    print(data_rows)
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
-#Get one data
+def get_all_posts():
+    query = """SELECT read_posts()"""
+    data_rows = database_query_handler_fun(query)
+    return response(status=status.HTTP_200_OK, message=DATA_SENT_SUCCESS, data=data_rows)
+#GET ONE RECORD
 @app.get('/posts/{id}')
-def get_posts(id:int):
-    cursor.execute(f"""SELECT read_posts({id})""")
-    data_rows = cursor.fetchone()
-    print(data_rows)
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
-
+def get_one_post(id:int):
+    query = f"""SELECT read_posts({id})"""
+    data_row = database_query_handler_fun(query)
+    return response(status=status.HTTP_200_OK, message=DATA_SENT_SUCCESS, data=data_row)
 ```
+**Why are we opening database connection before database operation and then closing it?** <br>
+- Prevent Resource Leaks:
+    - Database connections consume server resources (e.g., memory, CPU).
+    - Leaving connections open unnecessarily can lead to resource exhaustion, causing the database to deny new connections or perform poorly.
+- Connection Limits :
+    - Most databases have a maximum connection limit. If too many connections are open simultaneously and not closed, new connection requests may be blocked.
+    - This is particularly critical in high-traffic applications where multiple users interact with the database.
+- Avoid Stale Connections:
+    - Open connections that are not actively used may become stale or invalid (e.g., due to timeouts or network interruptions).
+    - Operating on a stale connection can cause unexpected errors, requiring reconnection.
+- Database Transaction Safety
+    - Open connections may hold uncommitted transactions, leading to data inconsistency or locks on database tables.
+    - Closing the connection ensures all transactions are properly committed or rolled back.
 
 ## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 

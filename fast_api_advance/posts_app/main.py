@@ -14,39 +14,26 @@ from utility.common_error_messages import (
 #Pydantic models 
 from pydantic_custom_models import Posts
 
-#import db handler 
-from database_handler.database_connection import database_conn
+#import db handler for query management
+from database_handler.database_query_handler import database_query_handler_fun
 
 app = FastAPI()
-
-# call this function establish connection with the database
-db_conn, cursor = database_conn()
 
 @app.get('/')
 def home():
     return response(status=status.HTTP_200_OK,message="This is a posts app homepage")
 
-# Get data using raw sql query in cursor
-# SAMPLE CODE DO NOT DELETE
-# @app.get('/posts')
-# def get_posts():
-#     cursor.execute("""SELECT * FROM posts ORDER BY id ASC;""")
-#     data_rows = cursor.fetchall()
-#     print(data_rows)
-#     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
-
 # Get data using database function written in pgAdmin in cursor
-#Get all data 
+# OPTIMIZED WAY
+# GET ALL RECORDS
 @app.get('/posts')
-def get_posts():
-    cursor.execute("""SELECT read_posts()""")
-    data_rows = cursor.fetchone()
-    print(data_rows)
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
-#Get one data 
+def get_all_posts():
+    query = """SELECT read_posts()"""
+    data_rows = database_query_handler_fun(query)
+    return response(status=status.HTTP_200_OK, message=DATA_SENT_SUCCESS, data=data_rows)
+#GET ONE RECORD
 @app.get('/posts/{id}')
-def get_posts(id:int):
-    cursor.execute(f"""SELECT read_posts({id})""")
-    data_rows = cursor.fetchone()
-    print(data_rows)
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
+def get_one_post(id:int):
+    query = f"""SELECT read_posts({id})"""
+    data_row = database_query_handler_fun(query)
+    return response(status=status.HTTP_200_OK, message=DATA_SENT_SUCCESS, data=data_row)

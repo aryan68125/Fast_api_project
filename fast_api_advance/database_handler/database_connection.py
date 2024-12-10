@@ -25,9 +25,10 @@ def database_conn():
                     password=config('DB_PASSWORD'),
                     cursor_factory=RealDictCursor
                 )
-            cursor = db_conn.cursor()
-            print("Database connection successful!")
-            return db_conn, cursor
+            # cursor = db_conn.cursor()
+            print("Database connection successfull!")
+            # return db_conn, 
+            return db_conn
             break
         except Exception as e:
             time.sleep(2)
