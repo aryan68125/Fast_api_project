@@ -35,7 +35,7 @@ def get_posts():
 
 @app.get('/posts/database_function/')
 def get_posts():
-    cursor.execute("""SELECT * FROM posts ORDER BY id ASC;""")
+    cursor.execute("""SELECT read_posts()""")
     data_rows = cursor.fetchall()
     print(data_rows)
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)

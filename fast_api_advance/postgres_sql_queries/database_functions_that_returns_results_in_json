@@ -259,6 +259,10 @@ SELECT hard_delete_product(16);
 
 
 
+
+
+
+
 -- USE JSONB INSTEAD OF JSON IN DATABASE FUNCTIONS  --
 -- create a table in database -- 
 CREATE TABLE posts(
@@ -289,7 +293,7 @@ BEGIN
     -- Return success message
     RETURN jsonb_build_object(
         'status', TRUE,
-        'message', 'Data insert success!',
+        'db_message', 'Data insert success!',
         'data', inserted_row
     );
 
@@ -298,8 +302,8 @@ EXCEPTION
         -- Return error message in case of failure
         RETURN jsonb_build_object(
             'status', FALSE,
-            'message', 'Data insert error! ' || SQLERRM,
-            'data', NULL -- Correctly represents a null value in PostgreSQL
+            'db_message', 'Data insert error! ' || SQLERRM,
+            'data', NULL 
         );
 END;
 $$ LANGUAGE plpgsql;
@@ -308,3 +312,55 @@ SELECT insert_post('first post', 'this is my first post', True);
 SELECT insert_post('second post', 'this is my second post', True);
 SELECT * FROM posts;
 
+
+
+-- READ ONE OR ALL DATA FROM THE DATABASE USING A FUNCTION THAT RETURNS IN JSONB --
+CREATE OR REPLACE FUNCTION read_posts(p_id INTEGER DEFAULT NULL)
+RETURNS JSONB AS $$
+DECLARE 
+	result JSONB;
+BEGIN
+	IF p_id IS NOT NULL THEN 
+		-- fetch one data --
+		SELECT jsonb_build_object(
+			'status',True,
+			'db_message','Data fetched successfully!',
+			'data', to_jsonb(t)
+		)
+		INTO result
+		FROM (
+			SELECT * FROM posts WHERE id=p_id
+		) t;
+
+		IF result IS NULL THEN
+			RETURN jsonb_build_object(
+				'status',False,
+				'db_message','No data found!',
+				'data',NULL
+			);
+		END IF;
+	ELSE
+		-- fetch all data --
+		SELECT jsonb_build_object(
+			'status',True,
+			'db_message','Data sent successfully!',
+			'data',jsonb_agg(to_jsonb(t))
+		)
+		INTO result
+		FROM (
+			SELECT * FROM posts ORDER BY id DESC
+		) t;
+		END IF;
+	RETURN result;
+EXCEPTION 
+	WHEN OTHERS THEN
+		RETURN jsonb_build_object(
+			'status',False,
+			'db_message','Error in fetching data : ' || SQLERRM,
+			'data',NULL
+		);
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT read_posts();
+SELECT read_posts(2);

@@ -2250,9 +2250,54 @@ def get_posts():
 <br>
 
 #### Fetch data using database functions inside cursor object in FastAPI end-point function
-**read_all_or_one_product** : A database function that can fetch one row or all rows from the database table depending on if the id is supplied to the database function or not.
+**read_posts** : A database function that can fetch one row or all rows from the database table depending on if the id is supplied to the database function or not.
 ```
+CREATE OR REPLACE FUNCTION read_posts(p_id INTEGER DEFAULT NULL)
+RETURNS JSONB AS $$
+DECLARE 
+	result JSONB;
+BEGIN
+	IF p_id IS NOT NULL THEN 
+		-- fetch one data --
+		SELECT jsonb_build_object(
+			'status',True,
+			'message','Data fetched successfully!',
+			'data', to_jsonb(t)
+		)
+		INTO result
+		FROM (
+			SELECT * FROM posts WHERE id=p_id
+		) t;
 
+		IF result IS NULL THEN
+			RETURN jsonb_build_object(
+				'status',False,
+				'message','No data found!',
+				'data',NULL
+			);
+		END IF;
+	ELSE
+		-- fetch all data --
+		SELECT jsonb_build_object(
+			'status',True,
+			'message','Data sent successfully!',
+			'data',jsonb_agg(to_jsonb(t))
+		)
+		INTO result
+		FROM (
+			SELECT * FROM posts ORDER BY id DESC
+		) t;
+		END IF;
+	RETURN result;
+EXCEPTION 
+	WHEN OTHERS THEN
+		RETURN jsonb_build_object(
+			'status',False,
+			'message','Error in fetching data : ' || SQLERRM,
+			'data',NULL
+		);
+END;
+$$ LANGUAGE plpgsql;
 ```
 **main.py** : Get all rows from database table using database functions in FastAPI <br>
 ```
