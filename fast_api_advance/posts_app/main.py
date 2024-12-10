@@ -19,10 +19,6 @@ from database_handler.database_query_handler import database_query_handler_fun
 
 app = FastAPI()
 
-@app.get('/')
-def home():
-    return response(status=status.HTTP_200_OK,message="This is a posts app homepage")
-
 #Insert data using database function written in PGAdmin using cursor
 import json
 @app.post('/posts')

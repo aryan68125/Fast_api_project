@@ -2446,6 +2446,82 @@ def get_one_post(id:int):
     - Open connections may hold uncommitted transactions, leading to data inconsistency or locks on database tables.
     - Closing the connection ensures all transactions are properly committed or rolled back.
 
+#### Insert data using database functions inside cursor object in FastAPI end-point function
+```Posts.py``` file i.e pydantic model , ```database_connection.py``` and ```database_query_handler.py``` files will remain the same no changes there. <br>
+The changes you will have to make is in postgres PGAdmin where you need to create a function to facilitate the data insertion. <br>
+**insert_post** : A database function that takes in data as parameters and sends response based on success or failure of the insert operation.
+```
+CREATE OR REPLACE FUNCTION insert_post(
+    p_title VARCHAR,
+    p_content TEXT,
+    p_is_published BOOLEAN DEFAULT TRUE
+)
+RETURNS JSONB AS $$
+DECLARE 
+    inserted_row JSONB;
+BEGIN
+    -- Insert the row and return the inserted row as JSONB
+    INSERT INTO posts (title, content, is_published)
+    VALUES (p_title, p_content, p_is_published)
+    RETURNING to_jsonb(posts) INTO inserted_row;
+
+    -- Return success message
+    RETURN jsonb_build_object(
+        'status', TRUE,
+        'db_message', 'Data insert success!',
+        'data', inserted_row
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Return error message in case of failure
+        RETURN jsonb_build_object(
+            'status', FALSE,
+            'db_message', 'Data insert error! ' || SQLERRM,
+            'data', NULL 
+        );
+END;
+$$ LANGUAGE plpgsql;
+```
+**main.py**
+```
+from fastapi import FastAPI, status
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR
+)
+
+#Pydantic models 
+from pydantic_custom_models.Posts import PostsModel
+
+#import db handler for query management
+from database_handler.database_query_handler import database_query_handler_fun
+
+app = FastAPI()
+
+#Insert data using database function written in PGAdmin using cursor
+import json
+@app.post('/posts')
+def create_posts(post:PostsModel):
+    post_dict = post.dict()
+    title = post_dict.get('title')
+    content = post_dict.get('content')
+    is_published = post_dict.get('is_published')
+    query = f"""SELECT insert_post('{title}', '{content}', {is_published})"""
+    database_response = database_query_handler_fun(query)
+    result_from_db = database_response.get('insert_post')
+    if not result_from_db.get('status'):
+        return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_INSERT_ERR,error=result_from_db.get("db_message"))
+    return response(status=status.HTTP_201_CREATED,message=DATA_INSERT_SUCCESS,data=result_from_db)
+```
+
 ## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
