@@ -40,6 +40,13 @@ def home():
 @app.get('/posts')
 def get_posts():
     cursor.execute("""SELECT read_posts()""")
-    data_rows = cursor.fetchall()
+    data_rows = cursor.fetchone()
+    print(data_rows)
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
+
+@app.get('/posts/{id}')
+def get_posts(id:int):
+    cursor.execute(f"""SELECT read_posts({id})""")
+    data_rows = cursor.fetchone()
     print(data_rows)
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
