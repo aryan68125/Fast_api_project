@@ -2026,7 +2026,7 @@ output : <br>
 
 <br>
 
-## Psycopg 2 
+## Psycopg 2 : Establish connection to the postgres database using psycopg2 library in FastAPI
 To install Psycopg2 in your python environment. You need to follow the guide below: <br>
 https://www.psycopg.org/docs/install.html#quick-install
 
@@ -2155,11 +2155,47 @@ def database_conn():
             time.sleep(2)
             print(e)
 ```
-- ```cursor_factory=RealDictCursor``` This line of code will give you the column name along with all the values when you make a query to retrieve a bunch of rows from a database. <br>
-**NOTE :** <br> 
-There is one thing that is weird with this library is that when you make a query to retrieve a bunch of rows from a database it doesn't include the column name, It just gives you the values of the column.
-- ```cursor``` will be used to execute SQL statements in an app in FastAPI
-**main.py** <br>
+**Explaination:**
+- ```psycopg2.connect``` <br>
+    - This establishes a connection to a PostgreSQL database.
+    - It is part of the psycopg2 library, a popular PostgreSQL adapter for Python.
+    - Parameters : 
+        - ```host```: Specifies the database server's IP or hostname.
+        - ```database```: The name of the PostgreSQL database.
+        - ```user```: The username used to authenticate.
+        - ```password```: The password for the user.
+        - ```cursor_factory```: Configures the type of cursor created.
+    - The function establishes a TCP/IP connection with the database server using the provided credentials.
+- ```db_conn``` <br>
+    - It stores a connection object, which is an open connection to the database.
+    - It allows interaction with the database, including executing SQL queries and managing transactions.
+- ```cursor_factory=RealDictCursor``` <br>
+    - ```RealDictCursor``` makes the ```cursor``` return rows as Python ```dictionaries``` instead of ```tuples```. Each ```dictionary``` has column names as keys.
+    - It's used to make the data more accessible and readable, especially when converting to ```JSON```.
+    - Internally, the ```cursor``` fetches data as tuples and maps them to ```dictionaries``` using column names.
+    - This line of code will give you the column name along with all the values when you make a query to retrieve a bunch of rows from a database. <br>
+        - **NOTE :** There is one thing that is weird with this library is that when you make a query to retrieve a bunch of rows from a database it doesn't include the column name, It just gives you the values of the column.
+- ```db_conn.cursor()``` <br>
+    - Creates a cursor object used to execute SQL commands.
+    - It's used to interact with the database by executing queries and fetching results.
+    - It creates a server-side cursor bound to the current database session.
+    - Returns the database connection and cursor objects to the caller.
+    - It's used to reuse the database connection and cursor in other parts of the application without creating new ones each time.
+    - **NOTE:** 
+        - A cursor acts as a pointer to the result set of a query.
+        - It is created in the context of a database connection and allows you to perform operations such as:
+            - Executing SQL queries.
+            - Fetching rows from the result set.
+            - Iterating over the fetched data.
+
+<br>
+
+### Create an api-endpoint that uses cursor to fetch data from database
+There are two methods to fetch data from the database 
+- One is to fire up sql query directly using cursor like this ```cursor.execute("""SELECT * FROM posts ORDER BY id ASC;""")``` and the use fetchall function like this ```cursor.fetchall()```
+- Another method is to fireup sql function written in database like this ```cursor.execute("SELECT read_all_products();")``` here ```read_all_products``` is a database function in postgreSQL and then after that you use fetchone like this ```cursor.fetchone()```
+#### Fetch data using sqlQuery inside cursor object in FastAPI end-point function
+**main.py** : Get all rows from database table using sql query in FastAPI <br>
 file directory : fast_api_advance/posts_app/main.py
 ```
 from fastapi import FastAPI, status
@@ -2197,8 +2233,30 @@ def get_posts():
     print(data_rows)
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
 ```
+**Explaination:**
+- ```db_conn, cursor = database_conn()```
+    - Establishes a connection to the database and creates a cursor for executing queries.
+    - Provides the application with a way to interact with the database.
+    - Calls the database_conn() function, which connects to the database and initializes a cursor.
+- ```cursor.execute("""SELECT * FROM posts ORDER BY id ASC;""")```
+    - Executes an SQL query to fetch all rows from the posts table, sorted by id.
+    - To retrieve data from the posts table.
+    - Sends the SQL query to the database server through the cursor.
+- ```data_rows = cursor.fetchall()```
+    - Fetches all rows returned by the previously executed query.
+    - To retrieve the actual data after executing the query.
+    - Collects the results of the query and returns them as a list of dictionaries (because of RealDictCursor). 
 
-## Pydantic Schemas [Handling (POST) request]
+<br>
+
+#### Fetch data using database functions inside cursor object in FastAPI end-point function
+**read_all_products** : A database function that can fetch one row or all rows from the database table depending on the 
+**main.py** : Get all rows from database table using database functions in FastAPI <br>
+```
+
+```
+
+## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
 <br>
