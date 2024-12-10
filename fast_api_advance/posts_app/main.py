@@ -26,14 +26,18 @@ db_conn, cursor = database_conn()
 def home():
     return response(status=status.HTTP_200_OK,message="This is a posts app homepage")
 
-@app.get('/posts')
-def get_posts():
-    cursor.execute("""SELECT * FROM posts ORDER BY id ASC;""")
-    data_rows = cursor.fetchall()
-    print(data_rows)
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
+# Get data using raw sql query in cursor
+# SAMPLE CODE DO NOT DELETE
+# @app.get('/posts')
+# def get_posts():
+#     cursor.execute("""SELECT * FROM posts ORDER BY id ASC;""")
+#     data_rows = cursor.fetchall()
+#     print(data_rows)
+#     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
 
-@app.get('/posts/database_function/')
+# Get data using database function written in pgAdmin in cursor
+
+@app.get('/posts')
 def get_posts():
     cursor.execute("""SELECT read_posts()""")
     data_rows = cursor.fetchall()

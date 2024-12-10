@@ -2301,7 +2301,12 @@ $$ LANGUAGE plpgsql;
 ```
 **main.py** : Get all rows from database table using database functions in FastAPI <br>
 ```
-
+@app.get('/posts')
+def get_posts():
+    cursor.execute("""SELECT read_posts()""")
+    data_rows = cursor.fetchall()
+    print(data_rows)
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=data_rows)
 ```
 
 ## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
