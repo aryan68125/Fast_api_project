@@ -2249,7 +2249,7 @@ def get_posts():
 
 <br>
 
-#### Fetch data using database functions inside cursor object in FastAPI end-point function
+#### Read data using database functions inside cursor object in FastAPI end-point function
 The method implemented here is a more optimized way <br>
 **read_posts** Database function : A database function that can fetch one row or all rows from the database table depending on if the id is supplied to the database function or not. <br>
 The function will return the response from database in JSONB format
@@ -2520,6 +2520,12 @@ def create_posts(post:PostsModel):
     if not result_from_db.get('status'):
         return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_INSERT_ERR,error=result_from_db.get("db_message"))
     return response(status=status.HTTP_201_CREATED,message=DATA_INSERT_SUCCESS,data=result_from_db)
+```
+
+#### Update data using database functions inside cursor object in FastAPI end-point function
+**update_post** : A database function that updates a record and accepts data in its parameters and returns a response in JSONB based on wheather an operation is successful or a failure.
+```
+
 ```
 
 ## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
