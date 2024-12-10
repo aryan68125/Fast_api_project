@@ -265,7 +265,7 @@ SELECT hard_delete_product(16);
 
 -- USE JSONB INSTEAD OF JSON IN DATABASE FUNCTIONS  --
 SELECT * FROM posts ORDER BY id ASC;
-DELETE FROM posts WHERE id IN (1,2);
+DELETE FROM posts WHERE id IN (6,10,11);
 -- create a table in database -- 
 CREATE TABLE posts(
 id SERIAL PRIMARY KEY,

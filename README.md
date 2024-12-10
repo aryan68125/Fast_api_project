@@ -2360,6 +2360,7 @@ def database_query_handler_fun(query:str):
         cursor = db_conn.cursor()
         cursor.execute(query)
         result = cursor.fetchone()
+        db_conn.commit()
         return result
     except Exception as e:
         print(f"Database query error {e}")
@@ -2367,6 +2368,23 @@ def database_query_handler_fun(query:str):
         if db_conn:
             db_conn.close()
             print(f"db_conn : {db_conn}")
+```
+**NOTE:** You won't be able to save any changes in the database during insert, update and delete operations if you don't do this ```db_conn.commit()``` i.e commit your changes in your database.
+**Posts.py** : Pydantic model to define the structure of data that the api end-point must accept <br>
+```
+from datetime import date
+
+# import pydantic
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class PostsModel(BaseModel):
+    id:int = None
+    title:str
+    content: str
+    is_published : bool = True
+    rating : int = 0
+    is_deleted : bool = False
 ```
 **main.py** : Get all rows from database table using database functions in FastAPI <br>
 ```
@@ -2376,26 +2394,22 @@ from fastapi import FastAPI, status
 from utility.common_response import response
 #import success messages from utility
 from utility.common_success_messages import (
-   DATA_SENT_SUCCESS 
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS
 )
 #import error messages from utility
 from utility.common_error_messages import (
-   DATA_SENT_ERR 
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR
 )
 
 #Pydantic models 
-from pydantic_custom_models import Posts
+from pydantic_custom_models.Posts import PostsModel
 
 #import db handler for query management
 from database_handler.database_query_handler import database_query_handler_fun
 
 app = FastAPI()
 
-@app.get('/')
-def home():
-    return response(status=status.HTTP_200_OK,message="This is a posts app homepage")
-
-# Get data using database function written in pgAdmin in cursor
+# Get data using database function written in pgAdmin using cursor
 # OPTIMIZED WAY
 # GET ALL RECORDS
 @app.get('/posts')
