@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 class PostsModel(BaseModel):
-    id:int
+    id:int = None
     title:str
     content: str
     is_published : bool = True

@@ -264,6 +264,8 @@ SELECT hard_delete_product(16);
 
 
 -- USE JSONB INSTEAD OF JSON IN DATABASE FUNCTIONS  --
+SELECT * FROM posts ORDER BY id ASC;
+DELETE FROM posts WHERE id IN (1,2);
 -- create a table in database -- 
 CREATE TABLE posts(
 id SERIAL PRIMARY KEY,
@@ -319,6 +321,7 @@ CREATE OR REPLACE FUNCTION read_posts(p_id INTEGER DEFAULT NULL)
 RETURNS JSONB AS $$
 DECLARE 
 	result JSONB;
+	row_count INTEGER;
 BEGIN
 	IF p_id IS NOT NULL THEN 
 		-- fetch one data --
@@ -350,7 +353,15 @@ BEGIN
 		FROM (
 			SELECT * FROM posts ORDER BY id DESC
 		) t;
+		SELECT COUNT(*) INTO row_count FROM posts;
+		IF row_count = 0 THEN
+			RETURN json_build_object(
+				'status',False,
+				'db_message', 'No data found!',
+                'data', NULL
+			);
 		END IF;
+	END IF;
 	RETURN result;
 EXCEPTION 
 	WHEN OTHERS THEN

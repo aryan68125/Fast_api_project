@@ -8,6 +8,7 @@ def database_query_handler_fun(query:str):
         cursor = db_conn.cursor()
         cursor.execute(query)
         result = cursor.fetchone()
+        db_conn.commit()
         return result
     except Exception as e:
         print(f"Database query error {e}")
