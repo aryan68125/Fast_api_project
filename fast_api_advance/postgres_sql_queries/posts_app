@@ -13,3 +13,30 @@ SELECT * FROM posts;
 INSERT INTO posts (title,content) VALUES 
 ('First post','Some intreseting stuff'),
 ('Second post','This is my second post');
+
+CREATE OR REPLACE FUNCTION read_all_products()
+RETURNS JSONB AS $$
+DECLARE 
+    result JSONB;
+BEGIN
+    -- Convert the query result into JSONB and assign it to 'result'
+    result := jsonb_build_object(
+        'status', TRUE,
+        'message', 'Data read successfully!',
+        'data', jsonb_agg(to_jsonb(t))
+    )
+    FROM (SELECT * FROM posts ORDER BY id ASC) t;
+    
+    -- Return the result JSONB
+    RETURN result;
+EXCEPTION
+    WHEN OTHERS THEN 
+        -- Return error message in case of an exception
+        RETURN jsonb_build_object(
+            'status', FALSE,
+            'message', 'Error in Reading: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT read_all_products();

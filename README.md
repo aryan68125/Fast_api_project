@@ -2250,7 +2250,10 @@ def get_posts():
 <br>
 
 #### Fetch data using database functions inside cursor object in FastAPI end-point function
-**read_all_products** : A database function that can fetch one row or all rows from the database table depending on the 
+**read_all_or_one_product** : A database function that can fetch one row or all rows from the database table depending on if the id is supplied to the database function or not.
+```
+
+```
 **main.py** : Get all rows from database table using database functions in FastAPI <br>
 ```
 

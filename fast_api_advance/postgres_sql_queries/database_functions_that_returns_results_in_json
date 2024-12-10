@@ -259,9 +259,52 @@ SELECT hard_delete_product(16);
 
 
 
+-- USE JSONB INSTEAD OF JSON IN DATABASE FUNCTIONS  --
+-- create a table in database -- 
+CREATE TABLE posts(
+id SERIAL PRIMARY KEY,
+title VARCHAR,
+content TEXT,
+is_published BOOLEAN DEFAULT True,
+rating INTEGER,
+is_deleted BOOLEAN DEFAULT False,
+created_at DATE DEFAULT CURRENT_DATE
+)
 
+-- INSERT FUNCTION USING JSONB --
+CREATE OR REPLACE FUNCTION insert_post(
+    p_title VARCHAR,
+    p_content TEXT,
+    p_is_published BOOLEAN DEFAULT TRUE
+)
+RETURNS JSONB AS $$
+DECLARE 
+    inserted_row JSONB;
+BEGIN
+    -- Insert the row and return the inserted row as JSONB
+    INSERT INTO posts (title, content, is_published)
+    VALUES (p_title, p_content, p_is_published)
+    RETURNING to_jsonb(posts) INTO inserted_row;
 
+    -- Return success message
+    RETURN jsonb_build_object(
+        'status', TRUE,
+        'message', 'Data insert success!',
+        'data', inserted_row
+    );
 
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Return error message in case of failure
+        RETURN jsonb_build_object(
+            'status', FALSE,
+            'message', 'Data insert error! ' || SQLERRM,
+            'data', NULL -- Correctly represents a null value in PostgreSQL
+        );
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT insert_post('first post', 'this is my first post', True);
+SELECT insert_post('second post', 'this is my second post', True);
+SELECT * FROM posts;
 
-
--- select coalesce(json_arr(row_to_json(tmp)),json_build_object('error',-404)) from ()tmp;
