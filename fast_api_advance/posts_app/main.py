@@ -57,6 +57,7 @@ def get_one_post(id:int):
         return response(status=status.HTTP_404_NOT_FOUND,message = DATA_NOT_FOUND_ERR,error=result_from_db.get("db_message"))
     return response(status=status.HTTP_200_OK, message=DATA_SENT_SUCCESS, data=data_row)
 
+# Update data using database function written in pgAdmin using cursor
 @app.patch('/posts/{id}')
 def update_post(post: PostsModel):
     post_dict = post.dict()

@@ -2525,7 +2525,74 @@ def create_posts(post:PostsModel):
 #### Update data using database functions inside cursor object in FastAPI end-point function
 **update_post** : A database function that updates a record and accepts data in its parameters and returns a response in JSONB based on wheather an operation is successful or a failure.
 ```
+CREATE OR REPLACE FUNCTION update_post(p_id INTEGER, p_title VARCHAR, p_content TEXT, p_is_published BOOLEAN)
+RETURNS JSONB AS $$
+DECLARE
+	updated_row JSONB;
+BEGIN
+	
+	UPDATE posts SET title = p_title , content = p_content, is_published = p_is_published WHERE id = p_id
+	RETURNING to_jsonb(posts) INTO updated_row;
+	if updated_row IS NULL THEN
+		RETURN json_build_object(
+			'status',False,
+			'db_message','Data not found!',
+			'data',updated_row
+		);
+	ELSE
+		RETURN jsonb_build_object(
+			'status',TRUE,
+			'db_message','Data updated successfully!',
+			'data',updated_row
+		);
+	END IF;
+EXCEPTION 
+	WHEN OTHERS THEN
+		RETURN jsonb_build_object(
+			'status',False,
+			'db_message','Error in updating data : ' || SQLERRM,
+			'data',NULL
+		);
+END;
+$$ LANGUAGE plpgsql;
+```
+**main.py** : In this file I am using a FastAPI end-point function to call database functions to update a record in a database via cursor 
+```
+from fastapi import FastAPI, status
 
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR
+)
+
+#Pydantic models 
+from pydantic_custom_models.Posts import PostsModel
+
+#import db handler for query management
+from database_handler.database_query_handler import database_query_handler_fun
+
+app = FastAPI()
+
+# Update data using database function written in pgAdmin using cursor
+@app.patch('/posts/{id}')
+def update_post(post: PostsModel):
+    post_dict = post.dict()
+    id = post_dict.get('id')
+    title = post_dict.get('title')
+    content = post_dict.get('content')
+    is_published = post_dict.get('is_published')
+    query = f"""SELECT update_post({id},'{title}','{content}',{is_published})"""
+    database_response = database_query_handler_fun(query)
+    result_from_db = database_response.get('update_post')
+    if not result_from_db.get('status'):
+        return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_UPDATE_ERR,error=result_from_db.get("db_message"))
+    return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=result_from_db)
 ```
 
 ## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
