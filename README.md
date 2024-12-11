@@ -2245,7 +2245,19 @@ def get_posts():
 - ```data_rows = cursor.fetchall()```
     - Fetches all rows returned by the previously executed query.
     - To retrieve the actual data after executing the query.
-    - Collects the results of the query and returns them as a list of dictionaries (because of RealDictCursor). 
+    - Collects the results of the query and returns them as a list of dictionaries (because of RealDictCursor).
+
+**NOTE :** If you are using an sql query for inserting , updating or deleting data from the database in your FastAPI and you use query which looks something like this
+```
+cursor.execute(f"""INSERT INTO posts (title, content, is_published) VALUES ({post.title}, {post.content}, {post.is_published})""")
+```
+Here as you can see that we have used string interpolation to embed our values into this sql query. <br>
+We shouldn't use this because it leads to SQLInjection attack. Instead we should use sql variables or placeholders to prevent sql injection attack in our database through FastAPI. <br>
+The code will look something like this
+```
+cursor.execute(f"""INSERT INTO posts (title, content, is_published) VALUES (%s, %s, %s)""",(post.title, post.content,post.published))
+```
+In this improved version of this code the order in which you pass in the values for the ```%s``` placeholders in the second argument of the ```execute``` function really matters.
 
 <br>
 
