@@ -2842,6 +2842,8 @@ def hard_delete_posts(post : HardDeletePostsModel):
 ## Object Relational Mapping : 
 Layer of abstraction that sits between the database and a python application. <br>
 ![image info](fast_api_advance/images/readme_images/ORM.png) <br>
+- Instead of manually defining tables in postgres, we can define our tables as python models.
+- Queries can be made exclusively through python code. No SQL is necessary.
 ### SQLAlchemy in FastAPI to make database connection.
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
