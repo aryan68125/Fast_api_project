@@ -2839,7 +2839,9 @@ def hard_delete_posts(post : HardDeletePostsModel):
     return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)
 ```
 
-## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
+## Object Relational Mapping : 
+Layer of abstraction that sits between the database and a python application.
+### SQLAlchemy in FastAPI to make database connection.
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
 <br>
