@@ -2845,6 +2845,7 @@ Layer of abstraction that sits between the database and a python application. <b
 - Instead of manually defining tables in postgres, we can define our tables as python models.
 - Queries can be made exclusively through python code. No SQL is necessary.
 ### SQLAlchemy in FastAPI to make database connection.
+![image info](fast_api_advance/images/readme_images/SQLALchemy_architecture.png) <br>
 - SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 - SQLAlchemy is an stand alone ORM library that has no association with FastAPI. It can be used with any other python web frameworks or any python based application.
 - It's not related with the FastAPI. You can use it with any python application.
