@@ -411,3 +411,83 @@ END;
 $$ LANGUAGE plpgsql;
 -- usage --
 SELECT update_post(19, '4TH Post', 'This is my 4th post', False);
+
+
+
+-- SOFT DELETE DATA IN DATABASE USING FUNCTIONS THAT RETURNS RESULTS IN JSONB --
+CREATE OR REPLACE FUNCTION soft_delete_or_retore_data(p_id INTEGER, p_is_deleted BOOLEAN)
+RETURNS JSONB AS $$
+DECLARE
+	deleted_row JSONB;
+BEGIN
+	UPDATE posts SET is_deleted = p_is_deleted WHERE id = p_id
+	RETURNING to_jsonb(posts) INTO deleted_row;
+	IF deleted_row IS NULL THEN
+		RETURN json_build_object(
+			'status',False,
+			'db_message','Data not found!',
+			'data',deleted_row
+		);
+	ELSE
+		IF p_is_deleted IS True THEN
+			RETURN json_build_object(
+				'status',True,
+				'db_message','Data soft deleted successfully!',
+				'data',deleted_row
+			);
+		ELSE
+			RETURN json_build_object(
+				'status',True,
+				'db_message','Data restored successfully!',
+				'data',deleted_row
+			);
+		END IF;
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		RETURN jsonb_build_object(
+			'status',False,
+			'db_message','Error in soft deleteing data : ' || SQLERRM,
+			'data',NULL
+		);
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT soft_delete_or_retore_data(12,False);
+SELECT * FROM posts ORDER BY id ASC;
+
+
+
+-- HARD DELETE DATA FROM THE DATABASE USING FUNCTIONS THAT RETURNS RESULTS IN JSONB --
+CREATE OR REPLACE FUNCTION hard_delete_posts(p_id INTEGER)
+RETURNS JSONB AS $$
+DECLARE 
+	deleted_row JSONB;
+BEGIN
+	DELETE FROM posts WHERE id = p_id
+	RETURNING to_jsonb(posts) INTO deleted_row;
+	IF deleted_row IS NULL THEN
+		RETURN json_build_object(
+			'status',False,
+			'db_message','Data hard delete failed!',
+			'data',deleted_row
+		);
+	ELSE
+		RETURN jsonb_build_object(
+			'status',True,
+			'db_message','Data hard delete success!',
+			'data',deleted_row
+		);
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		RETURN jsonb_build_object(
+			'status',False,
+			'db_message','Data hard delete error! ' || SQLERRM,
+			'data',NULL
+		);
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT hard_delete_posts(15);
+SELECT * FROM posts;

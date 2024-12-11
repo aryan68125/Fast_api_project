@@ -2533,7 +2533,7 @@ BEGIN
 	
 	UPDATE posts SET title = p_title , content = p_content, is_published = p_is_published WHERE id = p_id
 	RETURNING to_jsonb(posts) INTO updated_row;
-	if updated_row IS NULL THEN
+	IF updated_row IS NULL THEN
 		RETURN json_build_object(
 			'status',False,
 			'db_message','Data not found!',

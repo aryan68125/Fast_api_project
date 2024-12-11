@@ -4,12 +4,26 @@ from datetime import date
 from pydantic import BaseModel, Field
 from typing import Optional
 
-class PostsModel(BaseModel):
-    id:int = None
+class InsertPostsModel(BaseModel):
     title:str
     content: str
     is_published : bool = True
     rating : int = 0
-    is_deleted : bool = False
 
+class UpdatePostsModel(BaseModel):
+    id:int = None
+    title:str
+    content: str
+    is_published : bool = True
+
+class RatingPostsModel(BaseModel):
+    id:int = None
+    rating : int = 0
+
+class SoftDeleteRestorePostsModel(BaseModel):
+    id:int
+    is_deleted : bool
+
+class HardDeletePostsModel(BaseModel):
+    id:int
     
