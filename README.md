@@ -2862,7 +2862,8 @@ In FastAPI we use sqlmodel ORM to communicate with the Database and the way to i
 pip install sqlmodel
 ```
 
-### Accept the data from the front-end and store it in the Database
+### Accept the data from the front-end and store it in the Database : Using SQLite Database
+In this we have used SQLite database in the back-end.
 This is the project directory structure
 ```
 fast_api_intermediate
