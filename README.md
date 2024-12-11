@@ -2647,6 +2647,186 @@ def update_post(post: UpdatePostsModel):
     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=result_from_db)
 ```
 
+#### Soft delete or restore data using database functions inside cursor object in FastAPI end-point function
+**soft_delete_or_retore_data** : A database function that soft deletes or restore a record and accepts data in its parameters and returns a response in JSONB based on wheather an operation is successful or a failure.
+```
+CREATE OR REPLACE FUNCTION soft_delete_or_retore_data(p_id INTEGER, p_is_deleted BOOLEAN)
+RETURNS JSONB AS $$
+DECLARE
+	deleted_row JSONB;
+BEGIN
+	UPDATE posts SET is_deleted = p_is_deleted WHERE id = p_id
+	RETURNING to_jsonb(posts) INTO deleted_row;
+	IF deleted_row IS NULL THEN
+		RETURN json_build_object(
+			'status',False,
+			'db_message','Data not found!',
+			'data',deleted_row
+		);
+	ELSE
+		IF p_is_deleted IS True THEN
+			RETURN json_build_object(
+				'status',True,
+				'db_message','Data soft deleted successfully!',
+				'data',deleted_row
+			);
+		ELSE
+			RETURN json_build_object(
+				'status',True,
+				'db_message','Data restored successfully!',
+				'data',deleted_row
+			);
+		END IF;
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		RETURN jsonb_build_object(
+			'status',False,
+			'db_message','Error in soft deleteing data : ' || SQLERRM,
+			'data',NULL
+		);
+END;
+$$ LANGUAGE plpgsql;
+```
+**Posts.py** : Pydantic model for soft delete or restore api end-point
+```
+from datetime import date
+
+# import pydantic
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class SoftDeleteRestorePostsModel(BaseModel):
+    id:int
+    is_deleted : bool
+```
+**main.py** : In this file I am using a FastAPI end-point function to call database functions to soft delete or restore a record in a database via cursor 
+```
+from fastapi import FastAPI, status
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
+)
+
+#Pydantic models 
+from pydantic_custom_models.Posts import (
+    InsertPostsModel, UpdatePostsModel, RatingPostsModel, SoftDeleteRestorePostsModel, HardDeletePostsModel
+)
+
+#import db handler for query management
+from database_handler.database_query_handler import database_query_handler_fun
+
+app = FastAPI()
+
+@app.patch('/posts/delete-or-restore/{id}')
+def soft_delete_or_restore_post(post:SoftDeleteRestorePostsModel):
+    post_dict = post.dict()
+    id = post_dict.get('id')
+    is_deleted = post_dict.get("is_deleted")
+    query = f"""SELECT soft_delete_or_retore_data({id},{is_deleted})"""
+    database_response = database_query_handler_fun(query)
+    result_from_db = database_response.get('soft_delete_or_retore_data')
+    if not result_from_db.get('status'):
+        if is_deleted:
+            return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_SOFT_DELETE_ERR,error=result_from_db.get('db_message'))
+        else:
+            return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_RESTORE_ERR,error=result_from_db.get('db_message'))
+    if is_deleted:
+        return response(status=status.HTTP_200_OK,message=DATA_SOFT_DELETE_SUCCESS,error=result_from_db.get('db_message'))
+    else:
+        return response(status=status.HTTP_200_OK,message=DATA_RESTORE_SUCCESS,error=result_from_db.get('db_message'))
+```
+
+#### Hard data using database functions inside cursor object in FastAPI end-point function
+**hard_delete_posts** : A database function that hard deletes a record and accepts data in its parameters and returns a response in JSONB based on wheather an operation is successful or a failure.
+```
+CREATE OR REPLACE FUNCTION hard_delete_posts(p_id INTEGER)
+RETURNS JSONB AS $$
+DECLARE 
+	deleted_row JSONB;
+BEGIN
+	DELETE FROM posts WHERE id = p_id
+	RETURNING to_jsonb(posts) INTO deleted_row;
+	IF deleted_row IS NULL THEN
+		RETURN json_build_object(
+			'status',False,
+			'db_message','Data hard delete failed!',
+			'data',deleted_row
+		);
+	ELSE
+		RETURN jsonb_build_object(
+			'status',True,
+			'db_message','Data hard delete success!',
+			'data',deleted_row
+		);
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		RETURN jsonb_build_object(
+			'status',False,
+			'db_message','Data hard delete error! ' || SQLERRM,
+			'data',NULL
+		);
+END;
+$$ LANGUAGE plpgsql;
+```
+**Posts.py** : Pydantic model for hard delete api end-point
+```
+from datetime import date
+
+# import pydantic
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class HardDeletePostsModel(BaseModel):
+    id:int
+```
+**main.py** : In this file I am using a FastAPI end-point function to call database functions to hard delete a record in a database via cursor 
+```
+from fastapi import FastAPI, status
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
+)
+
+#Pydantic models 
+from pydantic_custom_models.Posts import (
+    InsertPostsModel, UpdatePostsModel, RatingPostsModel, SoftDeleteRestorePostsModel, HardDeletePostsModel
+)
+
+#import db handler for query management
+from database_handler.database_query_handler import database_query_handler_fun
+
+app = FastAPI()
+
+@app.delete('/posts/hard-delete/{id}')
+def hard_delete_posts(post : HardDeletePostsModel):
+    post_dict = post.dict()
+    id = post_dict.get('id')
+    query = f"""SELECT hard_delete_posts({id})"""
+    database_response = database_query_handler_fun(query)
+    result_from_db = database_response.get('hard_delete_posts')
+    if not result_from_db.get('status'):
+        return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_HARD_DELETE_ERR,error=result_from_db.get('db_message'))
+    if not result_from_db.get('data'):
+            return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_NOT_FOUND_ERR,error=result_from_db.get('db_message'))
+    return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)
+```
+
 ## Pydantic Schemas [Handling (POST) request] : SQLAlchemy in FastAPI to make database connection.
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
