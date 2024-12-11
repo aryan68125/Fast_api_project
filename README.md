@@ -2849,6 +2849,7 @@ Layer of abstraction that sits between the database and a python application. <b
 - SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 - SQLAlchemy is an stand alone ORM library that has no association with FastAPI. It can be used with any other python web frameworks or any python based application.
 - It's not related with the FastAPI. You can use it with any python application.
+- SqlAlchemy does not know how to talk to a database. You will actually need a database driver.
 
 <br>
 
