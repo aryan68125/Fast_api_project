@@ -1348,7 +1348,7 @@ $$ LANGUAGE plpgsql;
 
 Usage : ```SELECT insert_product('Washing machine', 15000);```
 Now this function returns a success or failure message to the caller in JSON format.
-Returned json message from the function:
+Returned json message from the function: <br>
 ![image info](fast_api_advance/images/readme_images/json_message_returned_by_user.png)  
 
 <br>
@@ -1426,7 +1426,7 @@ $$ LANGUAGE plpgsql;
 ```
 Usage : ```SELECT update_product(15,'Front loader washing machine', 45890);```
 Now this function returns a success or failure message to the caller in JSON format.
-Returned json message from the function:
+Returned json message from the function: <br>
 ![image info](fast_api_advance/images/readme_images/UPDATE_message_json.png) <br>
 
 **Explaination**:
@@ -1481,7 +1481,7 @@ $$ LANGUAGE plpgsql;
 ```
 Usage : ```SELECT delete_product(16);```
 Now this function returns a success or failure message to the caller in JSON format.
-Returned json message from the function:
+Returned json message from the function: <br>
 ![image info](fast_api_advance/images/readme_images/soft_delete_funciton_that_returns_json.png) <br>
 
 ### **RESTORE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
@@ -1524,7 +1524,7 @@ $$ LANGUAGE plpgsql;
 ```
 Usage : ```SELECT restore_product(16)```
 Now this function returns a success or failure message to the caller in JSON format.
-Returned json message from the function:
+Returned json message from the function: <br>
 ![image info](fast_api_advance/images/readme_images/restore_return_json.png) <br>
 
 ### **HARD DELETE AN ENTRY IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
@@ -1566,7 +1566,7 @@ $$ LANGUAGE plpgsql;
 ```
 Usage : ```SELECT hard_delete_product(16);```
 Now this function returns a success or failure message to the caller in JSON format.
-Returned json message from the function:
+Returned json message from the function: <br>
 ![image info](fast_api_advance/images/readme_images/hard_delete_return_json_function.png) <br>
 
 ### **READ ALL ENTRIES IN A TABLE AND RETURN A SUCCESS OR ERROR MESSAGE TO THE CALLER**
@@ -1604,7 +1604,7 @@ $$ LANGUAGE plpgsql;
 ```
 Usage : ```SELECT read_all_products();```
 Now this function returns a success or failure message to the caller in JSON format.
-Returned json message from the function:
+Returned json message from the function: <br>
 ![image info](fast_api_advance/images/readme_images/read_all_function_returns_json.png) <br>
 
 #### **Explaination**
@@ -1666,7 +1666,7 @@ $$ LANGUAGE plpgsql;
 ```
 Usage : ```SELECT read_one_product(8);```
 Now this function returns a success or failure message to the caller in JSON format.
-Returned json message from the function:
+Returned json message from the function: <br>
 ![image info](fast_api_advance/images/readme_images/read_one_function_return_json.png) <br>
 
 ## PostgreSQL Stored Procedures
@@ -1689,7 +1689,7 @@ END;
 $$;
 ```
 Usage : ```CALL insert_product_sp('soap denspenser', 700, 47);``` <br>
-Returned message from the stored procedure is not a json but in text format:
+Returned message from the stored procedure is not a json but in text format: <br>
 ![image info](fast_api_advance/images/readme_images/insert_return_statement_from_stored_procedure.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
@@ -1731,7 +1731,7 @@ END;
 $$;
 ```
 Usage : ```CALL update_product_sp(22, 'Hair Drier', 750,250,True)``` <br>
-Returned message from the stored procedure is not a json but in text format:
+Returned message from the stored procedure is not a json but in text format: <br>
 ![image info](fast_api_advance/images/readme_images/update_stored_procedure_return_message.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
@@ -1755,7 +1755,7 @@ END;
 $$;
 ```
 Usage : ```CALL soft_delete_product_sp(27);``` <br>
-Returned message from the stored procedure is not a json but in text format:
+Returned message from the stored procedure is not a json but in text format: <br>
 ![image info](fast_api_advance/images/readme_images/delete_stored_procedure_return_message.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
@@ -1779,7 +1779,7 @@ END;
 $$;
 ```
 Usage : ```CALL retore_data_product_sp(27);``` <br>
-Returned message from the stored procedure is not a json but in text format:
+Returned message from the stored procedure is not a json but in text format: <br>
 ![image info](fast_api_advance/images/readme_images/restore_data_stored_procedure_return_message.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
@@ -1807,7 +1807,7 @@ END;
 $$;
 ```
 Usage : ```CALL hard_delete_product_sp(25);``` <br>
-Returned message from the stored procedure is not a json but in text format:
+Returned message from the stored procedure is not a json but in text format: <br>
 ![image info](fast_api_advance/images/readme_images/hard_delete_stored_procedure_return_message.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
@@ -1869,10 +1869,10 @@ CALL read_product_sp(9);
 <br>
 
 Returned message from the stored procedure is not a json but in text format: <br>
-Get all rows result from ```read_product_sp``` stored procedure
+Get all rows result from ```read_product_sp``` stored procedure <br>
 ![image info](fast_api_advance/images/readme_images/get_all_rows_from_table_read_stored_procedure.png) <br>
 
-Get one row as a result from ```read_product_sp``` stored procedure
+Get one row as a result from ```read_product_sp``` stored procedure <br>
 ![image info](fast_api_advance/images/readme_images/returns_one_selected_row_read_stored_procedure.png) <br>
 
 **NOTE:** Stored procedure don't have a capacity to return json object. If you wish to return a json object when an operation succeeds then you need to use database functions. <br>
@@ -2840,7 +2840,8 @@ def hard_delete_posts(post : HardDeletePostsModel):
 ```
 
 ## Object Relational Mapping : 
-Layer of abstraction that sits between the database and a python application.
+Layer of abstraction that sits between the database and a python application. <br>
+![image info](fast_api_advance/images/readme_images/ORM.png) <br>
 ### SQLAlchemy in FastAPI to make database connection.
 SQLmodel is an ORM library that allows us to communicate with the Database engine in a similar way to how django orm works. 
 
