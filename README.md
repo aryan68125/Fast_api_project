@@ -2861,7 +2861,7 @@ In FastAPI we use sqlmodel ORM to communicate with the Database and the way to i
 ```
 pip install sqlmodel
 ```
-
+## SqlAlchemy with SQLite
 ### Accept the data from the front-end and store it in the Database : Using SQLite Database
 In this we have used SQLite database in the back-end.
 This is the project directory structure
@@ -3268,7 +3268,14 @@ session.refresh(blog)
   - Reloads the `blog` object from the database to update it with any changes made during the commit (e.g., auto-generated fields like `id`).
 - **Role of `session`:** 
   - Manages the transaction lifecycle and database operations.
-  - Ensures safe and consistent interaction with the database.
+  - Ensures safe and consistent interaction with the database. <br>
+
+## SqlAlchemy with Postgres in FastAPI
+Create a dedicated python file to handle the connection with the database. <br>
+The code below is a sample template code to establish database connection with the help of SqlAlchemy in FastAPI
+```
+SQLALCHEMY_DATABASE_URL = "postgresql://<username>:<password>@<ip-address/hostname>/<database_name>"
+```
 
 
 
