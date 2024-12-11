@@ -21,6 +21,7 @@ from database_handler.database_query_handler import database_query_handler_fun
 
 app = FastAPI()
 
+# POST APP RELATED APIS STARTS
 #Insert data using database function written in PGAdmin using cursor
 import json
 @app.post('/posts')
@@ -102,3 +103,4 @@ def hard_delete_posts(post : HardDeletePostsModel):
     if not result_from_db.get('data'):
             return response(status=status.HTTP_400_BAD_REQUEST,message=DATA_NOT_FOUND_ERR,error=result_from_db.get('db_message'))
     return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)
+# POST APP RELATED APIS ENDS
