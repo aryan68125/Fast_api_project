@@ -2316,6 +2316,10 @@ Later we can use db_conn object to open and close database connections before an
 import psycopg2
 from decouple import config
 
+'''
+There is one thing that is weird with this library is that when you make a query to retrieve a bunch of rows from a database it doesn't include the column name, It just gives you the values of the column.
+'''
+# So that's why we have to import RealDictCursor from psycopg2 library
 from psycopg2.extras import RealDictCursor
 
 from utility.common_success_messages import (
@@ -2378,15 +2382,31 @@ from datetime import date
 from pydantic import BaseModel, Field
 from typing import Optional
 
-class PostsModel(BaseModel):
-    id:int = None
+class InsertPostsModel(BaseModel):
     title:str
     content: str
     is_published : bool = True
     rating : int = 0
-    is_deleted : bool = False
+
+class UpdatePostsModel(BaseModel):
+    id:int = None
+    title:str
+    content: str
+    is_published : bool = True
+
+class RatingPostsModel(BaseModel):
+    id:int = None
+    rating : int = 0
+
+class SoftDeleteRestorePostsModel(BaseModel):
+    id:int
+    is_deleted : bool
+
+class HardDeletePostsModel(BaseModel):
+    id:int
+    
 ```
-**main.py** : Get all rows from database table using database functions in FastAPI <br>
+**main.py** : Get all rows or get one row from database table using database functions in FastAPI <br>
 ```
 from fastapi import FastAPI, status
 
@@ -2394,15 +2414,17 @@ from fastapi import FastAPI, status
 from utility.common_response import response
 #import success messages from utility
 from utility.common_success_messages import (
-   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
 )
 #import error messages from utility
 from utility.common_error_messages import (
-   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
 )
 
 #Pydantic models 
-from pydantic_custom_models.Posts import PostsModel
+from pydantic_custom_models.Posts import (
+    InsertPostsModel, UpdatePostsModel, RatingPostsModel, SoftDeleteRestorePostsModel, HardDeletePostsModel
+)
 
 #import db handler for query management
 from database_handler.database_query_handler import database_query_handler_fun
@@ -2417,7 +2439,6 @@ def get_all_posts():
     query = """SELECT read_posts()"""
     data_rows = database_query_handler_fun(query)
     result_from_db = data_rows.get("read_posts")
-    print(result_from_db.get('data'))
     if not result_from_db.get('data'):
         return response(status=status.HTTP_404_NOT_FOUND,message = DATA_NOT_FOUND_ERR,error=result_from_db.get("db_message"))
     return response(status=status.HTTP_200_OK, message=DATA_SENT_SUCCESS, data=data_rows)
@@ -2427,7 +2448,6 @@ def get_one_post(id:int):
     query = f"""SELECT read_posts({id})"""
     data_row = database_query_handler_fun(query)
     result_from_db = data_row.get("read_posts")
-    print(result_from_db.get('data'))
     if not result_from_db.get('data'):
         return response(status=status.HTTP_404_NOT_FOUND,message = DATA_NOT_FOUND_ERR,error=result_from_db.get("db_message"))
     return response(status=status.HTTP_200_OK, message=DATA_SENT_SUCCESS, data=data_row)
@@ -2483,6 +2503,20 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 ```
+**Posts.py** : Pydantic model for insert api end-point
+```
+from datetime import date
+
+# import pydantic
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class InsertPostsModel(BaseModel):
+    title:str
+    content: str
+    is_published : bool = True
+    rating : int = 0
+```
 **main.py**
 ```
 from fastapi import FastAPI, status
@@ -2491,15 +2525,17 @@ from fastapi import FastAPI, status
 from utility.common_response import response
 #import success messages from utility
 from utility.common_success_messages import (
-   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
 )
 #import error messages from utility
 from utility.common_error_messages import (
-   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
 )
 
 #Pydantic models 
-from pydantic_custom_models.Posts import PostsModel
+from pydantic_custom_models.Posts import (
+    InsertPostsModel, UpdatePostsModel, RatingPostsModel, SoftDeleteRestorePostsModel, HardDeletePostsModel
+)
 
 #import db handler for query management
 from database_handler.database_query_handler import database_query_handler_fun
@@ -2509,7 +2545,7 @@ app = FastAPI()
 #Insert data using database function written in PGAdmin using cursor
 import json
 @app.post('/posts')
-def create_posts(post:PostsModel):
+def create_posts(post:InsertPostsModel):
     post_dict = post.dict()
     title = post_dict.get('title')
     content = post_dict.get('content')
@@ -2533,7 +2569,7 @@ BEGIN
 	
 	UPDATE posts SET title = p_title , content = p_content, is_published = p_is_published WHERE id = p_id
 	RETURNING to_jsonb(posts) INTO updated_row;
-	IF updated_row IS NULL THEN
+	if updated_row IS NULL THEN
 		RETURN json_build_object(
 			'status',False,
 			'db_message','Data not found!',
@@ -2556,6 +2592,20 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 ```
+**Posts.py** : Pydantic model for update api end-point
+```
+from datetime import date
+
+# import pydantic
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class UpdatePostsModel(BaseModel):
+    id:int = None
+    title:str
+    content: str
+    is_published : bool = True
+```
 **main.py** : In this file I am using a FastAPI end-point function to call database functions to update a record in a database via cursor 
 ```
 from fastapi import FastAPI, status
@@ -2564,15 +2614,17 @@ from fastapi import FastAPI, status
 from utility.common_response import response
 #import success messages from utility
 from utility.common_success_messages import (
-   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
 )
 #import error messages from utility
 from utility.common_error_messages import (
-   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
 )
 
 #Pydantic models 
-from pydantic_custom_models.Posts import PostsModel
+from pydantic_custom_models.Posts import (
+    InsertPostsModel, UpdatePostsModel, RatingPostsModel, SoftDeleteRestorePostsModel, HardDeletePostsModel
+)
 
 #import db handler for query management
 from database_handler.database_query_handler import database_query_handler_fun
@@ -2581,7 +2633,7 @@ app = FastAPI()
 
 # Update data using database function written in pgAdmin using cursor
 @app.patch('/posts/{id}')
-def update_post(post: PostsModel):
+def update_post(post: UpdatePostsModel):
     post_dict = post.dict()
     id = post_dict.get('id')
     title = post_dict.get('title')
