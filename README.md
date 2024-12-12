@@ -3298,6 +3298,15 @@ db_engine  = create_engine(connection_string)
 SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=db_engine)
 
 Base = declarative_base()
+
+# dependency
+# this acts as a flush fucntion that closes the database connection after the query is done executing.
+def db_flush():
+    db_session = SessionLocal()
+    try:
+        yield db_session
+    finally:
+        db_session.close()
 ```
 
 <br>
@@ -3340,22 +3349,13 @@ from utility.common_error_messages import (
 #import sql alchemy model
 from . import sql_alchemy_models
 #import sql alchemy database engine
-from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
 #import session from sql alchemy
 from sqlalchemy.orm import Session
 
 app = FastAPI()
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
-
-# dependency
-# this acts as a flush fucntion that closes the database connection after the query is done executing.
-def db_flush():
-    db_session = SessionLocal()
-    try:
-        yield db_session
-    finally:
-        db_session.close()
 
 @app.get('/posts/{id}')
 def get_one_or_all_posts(db : Session = Depends(db_flush)):
