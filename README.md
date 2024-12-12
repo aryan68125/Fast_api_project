@@ -3272,11 +3272,143 @@ session.refresh(blog)
 
 ## SqlAlchemy with Postgres in FastAPI
 Create a dedicated python file to handle the connection with the database. <br>
-The code below is a sample template code to establish database connection with the help of SqlAlchemy in FastAPI
+**DATABASE CONNECTION STRING:**
+The code below is a sample template code called db **connection string** to establish database connection with the help of SqlAlchemy in FastAPI
 ```
 SQLALCHEMY_DATABASE_URL = "postgresql://<username>:<password>@<ip-address/hostname>/<database_name>"
+```  
+### **NOTE** : One thing to note about this connection string is that you have to make sure that your postgres password doesn't contain ```@``` in it. Otherwise the generated database connection string may cause issues when FastAPI tries to connect to the database using SQLAlchemy.
+
+<br>
+
+**DATABASE ENGINE FILE: sql_alchemy_db_handler.py file**
+Now we have to create a database engine. Now this engine is responsible for SqlAlchemy to connect to a postgres database. 
+```
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+from decouple import config
+
+# SQLALCHEMY_DATABASE_URL = "postgresql://<username>:<password>@<ip-address/hostname>/<database_name>"
+connection_string = f"postgresql://{config('DB_USERNAME')}:{config('DB_PASSWORD')}@{config('DB_IP')}/{config('DB_NAME')}"
+print(connection_string)
+db_engine  = create_engine(connection_string)
+
+SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=db_engine)
+
+Base = declarative_base()
 ```
 
+<br>
+
+**DATABASE MODELS : sql_alchemy_models.py** 
+```
+from database_handler.sql_alchemy_db_handler import Base
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean
+
+class posts_sql_alchemy_table(Base):
+    __tablename__ = "posts_sql_alchemy_table"
+    #define all of the columns
+    id = Column(Integer, primary_key=True, nullable=False)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    rating = Column(Integer,nullable=False,default=0)
+    is_published = Column(Boolean, nullable=False, default=True)
+    is_deleted = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False,default=datetime.now)
+```
+
+<br>
+
+**MAIN FILE : FASTAPI (POST APP): main.py**
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+# dependency
+# this acts as a flush fucntion that closes the database connection after the query is done executing.
+def get_db():
+    db_session = SessionLocal()
+    try:
+        yield db_session
+    finally:
+        db_session.close()
+
+@app.get('/posts/{id}')
+def get_one_or_all_posts(db : Session = Depends(get_db)):
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS)
+```
+
+The moment you hit this api end-point as shown below <br>
+```
+@app.get('/posts/{id}')
+def get_one_or_all_posts(db : Session = Depends(get_db)):
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS)
+```
+The code ```sql_alchemy_models.Base.metadata.create_all(bind=db_engine)``` is used in SQLAlchemy to create database tables that are defined in your SQLAlchemy models. Here's a detailed explanation:
+- ```sql_alchemy_models.Base``` : 
+    - This is the base class for all your SQLAlchemy ORM models.
+    - It is typically created using ```declarative_base()``` from ```sqlalchemy.ext```:
+    ```
+    from database_handler.sql_alchemy_db_handler import Base
+    from datetime import datetime
+    from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean
+
+    class posts_sql_alchemy_table(Base):
+        __tablename__ = "posts_sql_alchemy_table"
+        #define all of the columns
+        id = Column(Integer, primary_key=True, nullable=False)
+        title = Column(String, nullable=False)
+        content = Column(Text, nullable=False)
+        rating = Column(Integer,nullable=False,default=0)
+        is_published = Column(Boolean, nullable=False, default=True)
+        is_deleted = Column(Boolean, nullable=False, default=False)
+        created_at = Column(DateTime, nullable=False,default=datetime.now)
+    ```
+- ```metadata```:
+    - ```metadata``` is an object that contains all the table definitions (Table objects) associated with the ```Base``` class.
+    - It essentially stores schema information for the models.
+- ```.create_all(bind=db_engine)```:
+    - ```create_all``` is a method that creates all tables in the database if they don't already exist.
+    - The bind parameter specifies the database engine to connect to. This is typically created like:
+    ```
+    connection_string = f"postgresql://{config('DB_USERNAME')}:{config('DB_PASSWORD')}@{config('DB_IP')}/{config('DB_NAME')}"
+    print(connection_string)
+    db_engine  = create_engine(connection_string)
+    ```
+
+- this acts as a flush fucntion that closes the database connection after the query is done executing. <br>
+    ```
+    def get_db():
+        db_session = SessionLocal()
+        try:
+            yield db_session
+        finally:
+            db_session.close()
+    ```
 
 
 
