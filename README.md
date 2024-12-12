@@ -3564,9 +3564,7 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 @app.post('/post')
 def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     new_post = sql_alchemy_models.posts_sql_alchemy_table(
-        title=post.title,
-        content=post.content,
-        is_published=post.is_published
+        **post.dict()
     )
     db.add(new_post)
     db.commit()
