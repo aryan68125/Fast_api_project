@@ -29,7 +29,7 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 # dependency
 # this acts as a flush fucntion that closes the database connection after the query is done executing.
-def get_db():
+def db_flush():
     db_session = SessionLocal()
     try:
         yield db_session
@@ -37,5 +37,5 @@ def get_db():
         db_session.close()
 
 @app.get('/posts/{id}')
-def get_one_or_all_posts(db : Session = Depends(get_db)):
+def get_one_or_all_posts(db : Session = Depends(db_flush)):
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS)

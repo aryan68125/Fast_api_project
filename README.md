@@ -3350,7 +3350,7 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 # dependency
 # this acts as a flush fucntion that closes the database connection after the query is done executing.
-def get_db():
+def db_flush():
     db_session = SessionLocal()
     try:
         yield db_session
@@ -3358,7 +3358,7 @@ def get_db():
         db_session.close()
 
 @app.get('/posts/{id}')
-def get_one_or_all_posts(db : Session = Depends(get_db)):
+def get_one_or_all_posts(db : Session = Depends(db_flush)):
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS)
 ```
 
@@ -3400,16 +3400,18 @@ The code ```sql_alchemy_models.Base.metadata.create_all(bind=db_engine)``` is us
     db_engine  = create_engine(connection_string)
     ```
 
-- this acts as a flush fucntion that closes the database connection after the query is done executing. <br>
+- This acts as a flush fucntion that closes the database connection after the query is done executing. <br>
     ```
-    def get_db():
+    def db_flush():
         db_session = SessionLocal()
         try:
             yield db_session
         finally:
             db_session.close()
     ```
-
+    - ```SessionLocal``` is an instance of ```sqlalchemy.orm.sessionmaker```
+    - It is a factory function that creates SQLAlchemy database sessions bound to a specific database engine.
+    - ```SessionLocal``` is defined in ```sql_alchemy_db_handler.py``` file.
 
 
 
