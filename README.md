@@ -3329,6 +3329,7 @@ class posts_sql_alchemy_table(Base):
     is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")
     created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())
 ```
+- ```func``` : 
 
 <br>
 
@@ -3361,7 +3362,8 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 @app.get('/posts/{id}')
 def get_one_or_all_posts(db : Session = Depends(db_flush)):
     # This is gonna grab every single entry withing the posts_sql_alchemy_table
-    posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
+    # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
+    posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
 ```
 
@@ -3416,6 +3418,18 @@ Dependencies can be injected into route functions, so that logic like fetching a
     - ```SessionLocal``` is an instance of ```sqlalchemy.orm.sessionmaker```
     - It is a factory function that creates SQLAlchemy database sessions bound to a specific database engine.
     - ```SessionLocal``` is defined in ```sql_alchemy_db_handler.py``` file.
+- ```db.query(sql_alchemy_models.posts_sql_alchemy_table).all()``` : 
+    - The code ```db.query(sql_alchemy_models.posts_sql_alchemy_table).all()``` is used in SQLAlchemy to fetch all rows from the database table represented by ```sql_alchemy_models.posts_sql_alchemy_table```.
+    - ```db.query()```:
+        - ```db``` is typically a SQLAlchemy Session object, used to interact with the database.
+        - ```query()``` is a method of the Session object that allows you to construct a database query.
+        - Inside ```query()```, you specify the table or model you want to query. Here, it’s ```sql_alchemy_models.posts_sql_alchemy_table```, which is a SQLAlchemy model class representing the ```posts_sql_alchemy_table``` table.
+    -  ```.all()```:
+        - ```.all()``` executes the constructed query and retrieves all rows from the result set as a list of objects.
+        -  Each row is returned as an instance of the ```posts_sql_alchemy_table``` model class.
+        - The result will be a Python list where each element corresponds to a row in the table.
+- **NOTE:** You can use this query ```posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()``` to return database table in descending order when getting all records from the database. You need to import ```desc``` from ```sqlalchemy``` like this ```posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()```
+
 
 
 
