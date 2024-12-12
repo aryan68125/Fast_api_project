@@ -3577,6 +3577,7 @@ def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
 ### Hard delete a row from the database table
 The rest of the things will be the same like **sql_alchemy_db_handler.py** and **sql_alchemy_models.py**. <br>
 **MAIN FILE : FASTAPI (POST APP): main.py** <br>
+
 ```
 from fastapi import FastAPI, status, Depends
 
@@ -3621,6 +3622,19 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     db.commit()
     return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)
 ```
+
+<br>
+
+One thing to note is that if you use this <br>
+```
+db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id).first()
+```
+Instead of this <br>
+```
+db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(
+        sql_alchemy_models.posts_sql_alchemy_table.id == id)
+```
+Then you won't be able to perform hard delete operation on row of a table in a database.
 
 
 
