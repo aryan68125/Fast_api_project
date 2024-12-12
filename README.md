@@ -3399,7 +3399,8 @@ The code ```sql_alchemy_models.Base.metadata.create_all(bind=db_engine)``` is us
     print(connection_string)
     db_engine  = create_engine(connection_string)
     ```
-
+- ```Depends``` is a function from FastAPI that helps you declare and resolve dependencies for the route handler.
+Dependencies can be injected into route functions, so that logic like fetching a database session, user authentication, etc., is handled automatically by FastAPI, instead of being manually passed around.
 - This acts as a flush fucntion that closes the database connection after the query is done executing. <br>
     ```
     def db_flush():
