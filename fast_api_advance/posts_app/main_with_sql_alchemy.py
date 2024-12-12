@@ -30,24 +30,6 @@ app = FastAPI()
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
-#get all rows from the table using sql alchemy
-@app.get('/posts',)
-def get_all_posts(db:Session=Depends(db_flush)):
-        # This is gonna grab every single entry withing the posts_sql_alchemy_table
-        # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
-        posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()
-        if not len(posts):
-            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-        return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
-
-#get one row from the table using sql alchemy
-@app.get('/posts/{id}',)
-def get_one_post(id:int,db: Session = Depends(db_flush)):
-        post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id).first()
-        if not post:
-            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-        return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
-
 @app.post('/post')
 def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     new_post = sql_alchemy_models.posts_sql_alchemy_table(
@@ -59,3 +41,32 @@ def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     if not new_post:
         return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
     return response(status=status.HTTP_201_CREATED,message=DATA_INSERT_SUCCESS,data=new_post)
+
+#get all rows from the table using sql alchemy
+@app.get('/posts',)
+def get_all_posts(db:Session=Depends(db_flush)):
+        # This is gonna grab every single entry withing the posts_sql_alchemy_table
+        # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
+        posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()
+        if not len(posts):
+            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+        return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
+#get one row from the table using sql alchemy
+@app.get('/posts/{id}',)
+def get_one_post(id:int, db: Session = Depends(db_flush)):
+        post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id).first()
+        if not post:
+            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+        return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
+
+@app.delete('/post/{id}')
+def hard_delete_post(id:int, db: Session = Depends(db_flush)):
+    existing_post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(
+        sql_alchemy_models.posts_sql_alchemy_table.id == id
+    )
+    if not existing_post:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    existing_post.delete(synchronize_session=False)
+    db.commit()
+    return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)
+        
