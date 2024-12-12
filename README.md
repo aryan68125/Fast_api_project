@@ -3324,10 +3324,10 @@ class posts_sql_alchemy_table(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
-    rating = Column(Integer, nullable=False, default=0, server_default="0")  # Add server_default
-    is_published = Column(Boolean, nullable=False, default=True, server_default="true")  # Add server_default
-    is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")  # Add server_default
-    created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())  # Add server_default
+    rating = Column(Integer, nullable=False, default=0, server_default="0")
+    is_published = Column(Boolean, nullable=False, default=True, server_default="true")
+    is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")
+    created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())
 ```
 
 <br>
