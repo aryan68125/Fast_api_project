@@ -3428,6 +3428,7 @@ Dependencies can be injected into route functions, so that logic like fetching a
         - ```.all()``` executes the constructed query and retrieves all rows from the result set as a list of objects.
         -  Each row is returned as an instance of the ```posts_sql_alchemy_table``` model class.
         - The result will be a Python list where each element corresponds to a row in the table.
+        - Until ```all``` method is called the its just a sql query that hasn't been run yet.
 - **NOTE:** You can use this query ```posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()``` to return database table in descending order when getting all records from the database. You need to import ```desc``` from ```sqlalchemy``` like this ```posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()```
 
 
