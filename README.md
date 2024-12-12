@@ -3314,8 +3314,9 @@ def db_flush():
 **DATABASE MODELS : sql_alchemy_models.py** 
 ```
 from database_handler.sql_alchemy_db_handler import Base
-from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean
+from sqlalchemy.sql import func
+from sqlalchemy.schema import FetchedValue
 
 class posts_sql_alchemy_table(Base):
     __tablename__ = "posts_sql_alchemy_table"
@@ -3323,10 +3324,10 @@ class posts_sql_alchemy_table(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
-    rating = Column(Integer,nullable=False,default=0)
-    is_published = Column(Boolean, nullable=False, default=True)
-    is_deleted = Column(Boolean, nullable=False, default=False)
-    created_at = Column(DateTime, nullable=False,default=datetime.now)
+    rating = Column(Integer, nullable=False, default=0, server_default="0")  # Add server_default
+    is_published = Column(Boolean, nullable=False, default=True, server_default="true")  # Add server_default
+    is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")  # Add server_default
+    created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())  # Add server_default
 ```
 
 <br>
@@ -3359,7 +3360,9 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 @app.get('/posts/{id}')
 def get_one_or_all_posts(db : Session = Depends(db_flush)):
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS)
+    # This is gonna grab every single entry withing the posts_sql_alchemy_table
+    posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
 ```
 
 The moment you hit this api end-point as shown below <br>
@@ -3373,20 +3376,20 @@ The code ```sql_alchemy_models.Base.metadata.create_all(bind=db_engine)``` is us
     - This is the base class for all your SQLAlchemy ORM models.
     - It is typically created using ```declarative_base()``` from ```sqlalchemy.ext```:
     ```
-    from database_handler.sql_alchemy_db_handler import Base
-    from datetime import datetime
-    from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean
+    from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+    from sqlalchemy.sql import func
+    from sqlalchemy.schema import FetchedValue
 
-    class posts_sql_alchemy_table(Base):
+    class PostsSQLAlchemyTable(Base):
         __tablename__ = "posts_sql_alchemy_table"
-        #define all of the columns
+
         id = Column(Integer, primary_key=True, nullable=False)
         title = Column(String, nullable=False)
         content = Column(Text, nullable=False)
-        rating = Column(Integer,nullable=False,default=0)
-        is_published = Column(Boolean, nullable=False, default=True)
-        is_deleted = Column(Boolean, nullable=False, default=False)
-        created_at = Column(DateTime, nullable=False,default=datetime.now)
+        rating = Column(Integer, nullable=False, default=0, server_default="0")  # Add server_default
+        is_published = Column(Boolean, nullable=False, default=True, server_default="true")  # Add server_default
+        is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")  # Add server_default
+        created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())  # Add server_default
     ```
 - ```metadata```:
     - ```metadata``` is an object that contains all the table definitions (Table objects) associated with the ```Base``` class.

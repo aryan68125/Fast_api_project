@@ -29,5 +29,6 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 @app.get('/posts/{id}')
 def get_one_or_all_posts(db : Session = Depends(db_flush)):
-    
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS)
+    # This is gonna grab every single entry withing the posts_sql_alchemy_table
+    posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
