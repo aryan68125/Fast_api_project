@@ -9,7 +9,6 @@ class InsertPostsModel(BaseModel):
     title:str
     content: str
     is_published : bool = True
-    rating : int = 0
 
 class UpdatePostsModel(BaseModel):
     title:str
