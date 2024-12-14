@@ -3981,3 +3981,82 @@ In order for it work we need two libraries
 - **Installation process:**
     - pip install passlib
     - pip install bcrypt
+
+**main.py file:** <br>
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel
+
+
+#import user password encryption libraries
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+#Create a user in a database table
+@app.post('/users')
+def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_flush)):
+    try:
+       # before we create the user we need to create the hash of the password
+       #hash the use password
+       hashed_password = pwd_context.hash(userModel.password)
+       userModel.password = hashed_password
+       #Now that the password is hashed we can create a new user
+       new_user = sql_alchemy_models.UserMaster(**userModel.model_dump())
+       db.add(new_user)
+       db.commit()
+       db.refresh(new_user)
+       if not new_user:
+           return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
+       response_data_dict = {
+           'id':new_user.id,
+           'email' : new_user.email,
+           'is_blocked' : new_user.is_blocked,
+           'is_deleted' : new_user.is_deleted,
+           'created_at' : new_user.created_at
+       }
+       return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
+    except Exception as e:
+         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
+```
+
+- All we are doing here is telling the passlib library what is the default hashing algorithm here in our case its bcrypt.
+    ```
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    ```
+- Create a hashed password and then save it in the incomming data via pydantic model the rest of the code to save the user will remain the same. 
+    ```
+    hashed_password = pwd_context.hash(userModel.password)
+       userModel.password = hashed_password
+    ```
+- By doing this if data leaks do happen from our database the hackers atleast won't get access to the user's password instead they will get the hashed password which they can't unhash to get the original password since they don't know what hashing algorithm has been used to hash the password in the first place.

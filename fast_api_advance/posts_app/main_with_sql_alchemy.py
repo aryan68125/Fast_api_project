@@ -27,6 +27,11 @@ from typing import Optional
 from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
 from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel
 
+
+#import user password encryption libraries
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 app = FastAPI()
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
@@ -116,6 +121,11 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
 @app.post('/users')
 def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_flush)):
     try:
+       # before we create the user we need to create the hash of the password
+       #hash the use password
+       hashed_password = pwd_context.hash(userModel.password)
+       userModel.password = hashed_password
+       #Now that the password is hashed we can create a new user
        new_user = sql_alchemy_models.UserMaster(**userModel.model_dump())
        db.add(new_user)
        db.commit()
