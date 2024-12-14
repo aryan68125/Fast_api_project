@@ -3878,7 +3878,97 @@ class posts_sql_alchemy_table(Base):
 - This sql aclchemy orm model is fundamentally different from the pydantic model.
 
 ## Users account in FastAPI using sql alchemy orm library
+### Create a user using sql alchemy orm library in FastAPI
+**PYDANTIC MODEL:** <br>
+```
+from datetime import datetime
 
+# import pydantic 
+from pydantic import BaseModel , Field, EmailStr
+from typing import Optional
 
+class CreateUpdateUserModel(BaseModel):
+    email : EmailStr
+    password : str
 
+class BlockUnblockUsersModel(BaseModel):
+    is_blocked : bool
+
+class SoftDeleteRestoreUserModel(BaseModel):
+    is_deleted : bool
+```
+
+**sql alchemy orm model:** <br>
+```
+from database_handler.sql_alchemy_db_handler import Base
+from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean
+from sqlalchemy.sql import func
+from sqlalchemy.schema import FetchedValue
+
+class UserMaster(Base):
+    __tablename__ = "user_master"
+    id = Column(Integer, primary_key=True,nullable=False)
+    email = Column(String,nullable=False, unique=True)
+    password = Column(String,nullable=False,)
+    is_deleted = Column(Boolean,nullable=False,server_default="false")
+    is_blocked = Column(Boolean,nullable=False,server_default="true")
+    created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
+```
+
+**main.py file:** <br>
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, CreateUpdateUserResponse
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+#Create a user in a database table
+@app.post('/users')
+def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_flush)):
+    try:
+       new_user = sql_alchemy_models.UserMaster(**userModel.model_dump())
+       db.add(new_user)
+       db.commit()
+       db.refresh(new_user)
+       if not new_user:
+           return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
+       response_data_dict = {
+           'id':new_user.id,
+           'email' : new_user.email,
+           'is_blocked' : new_user.is_blocked,
+           'is_deleted' : new_user.is_deleted,
+           'created_at' : new_user.created_at
+       }
+       return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
+    except Exception as e:
+         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
+```
 
