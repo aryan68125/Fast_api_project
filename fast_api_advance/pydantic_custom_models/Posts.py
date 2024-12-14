@@ -21,7 +21,6 @@ class RatingPostsModel(BaseModel):
     rating : int = 0
 
 class SoftDeleteRestorePostsModel(BaseModel):
-    id:int
     is_deleted : bool
 
 class HardDeletePostsModel(BaseModel):

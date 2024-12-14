@@ -24,7 +24,7 @@ from sqlalchemy import desc
 #make url parameters optional
 from typing import Optional
 #usae pydantic model to define the structure of the data that is to be inserted in the api end-point
-from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel
 
 app = FastAPI()
 
@@ -72,6 +72,20 @@ def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_fl
 
      return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
+#Soft delete posts
+@app.patch('/posts/soft-delete-or-restore/{id}')
+def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db : Session = Depends(db_flush)):
+     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
+     post = post_query.first()
+     if not post:
+          return response(status = status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+     PostModelUpdated = PostModel.model_dump()
+     PostModelUpdated['is_published'] = not PostModelUpdated.get('is_deleted')
+     post_query.update(PostModelUpdated, synchronize_session=False)
+     db.commit()
+     if PostModel.is_deleted:
+          return response(status=status.HTTP_200_OK,message=DATA_SOFT_DELETE_SUCCESS,data=post_query.first())
+     return response(status=status.HTTP_200_OK,message=DATA_RESTORE_SUCCESS,data=post_query.first())
 
 @app.delete('/post/{id}')
 def hard_delete_post(id:int, db: Session = Depends(db_flush)):
