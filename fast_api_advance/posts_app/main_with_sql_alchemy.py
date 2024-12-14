@@ -25,7 +25,7 @@ from sqlalchemy import desc
 from typing import Optional
 #usae pydantic model to define the structure of the data that is to be inserted in the api end-point
 from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
-from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, CreateUpdateUserResponse
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel
 
 app = FastAPI()
 
