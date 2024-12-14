@@ -3688,7 +3688,6 @@ class SoftDeleteRestorePostsModel(BaseModel):
 class HardDeletePostsModel(BaseModel):
     id:int
 # POST APP PYDANTIC MODEL ENDS
-    
 ```
 **main.py file:**
 ```
@@ -3804,6 +3803,70 @@ Then you won't be able to perform hard delete operation on row of a table in a d
 
 
 ## Difference between a Pydantic model or schema and sql aclhemy or orm model:
+![image info](fast_api_advance/images/readme_images/pydantic_vs_sql_alchemy_model.jpg) <br>
+### Pydantic model : 
+```
+from datetime import date
+
+# import pydantic
+from pydantic import BaseModel, Field
+from typing import Optional
+
+# POST APP PYDANTIC MODEL STARTS
+class InsertPostsModel(BaseModel):
+    title:str
+    content: str
+    is_published : bool = True
+    rating : int = 0
+
+class UpdatePostsModel(BaseModel):
+    title:str
+    content: str
+    is_published : bool = True
+
+class RatingPostsModel(BaseModel):
+    id:int = None
+    rating : int = 0
+
+class SoftDeleteRestorePostsModel(BaseModel):
+    is_deleted : bool
+
+class HardDeletePostsModel(BaseModel):
+    id:int
+# POST APP PYDANTIC MODEL ENDS
+```
+- Pydantic model is referred to as our schema. 
+- It inherits from the BaseModel class from the pydatic library. 
+- It defines the structure of our data that the api end-point in FastAPI will accept from the front-end.
+- The pydantic model defines the structure of a request and a response.
+- Pydantic model also performs validations on each of the fields defined in it.
+- Up until now we haven't define what our response should look like using pydantic model. But pydantic models could be used to define our api response too.
+
+### Sql alchemy or orm model :
+```
+from database_handler.sql_alchemy_db_handler import Base
+from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean
+from sqlalchemy.sql import func
+from sqlalchemy.schema import FetchedValue
+
+class posts_sql_alchemy_table(Base):
+    __tablename__ = "posts_sql_alchemy_table"
+    #define all of the columns
+    id = Column(Integer, primary_key=True, nullable=False)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    rating = Column(Integer, nullable=False, default=0, server_default="0")
+    is_published = Column(Boolean, nullable=False, default=True, server_default="true")
+    is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")
+    created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())
+```
+![image info](fast_api_advance/images/readme_images/sql_alchemy_model.jpg) <br>
+- This is our sql alchemy model.
+- It is used to define how our specific table in our database looks like.
+- This is responsible for defining the columns in our table in the database in this case we are using postgres database.
+- Its used to create, update, read and delete entries in a database table.
+- This sql aclchemy orm model is fundamentally different from the pydantic model.
+
 
 
 
