@@ -25,6 +25,7 @@ from sqlalchemy import desc
 from typing import Optional
 #usae pydantic model to define the structure of the data that is to be inserted in the api end-point
 from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel
 
 app = FastAPI()
 
@@ -112,3 +113,17 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     db.commit()
     return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)
         
+
+
+@app.post('/users')
+def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_flush)):
+     try:
+        new_user = sql_alchemy_models.UserMaster(**userModel.model_dump())
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        if not new_user:
+            return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
+        return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=new_user)
+     except Exception as e:
+          return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)

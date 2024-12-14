@@ -3877,6 +3877,7 @@ class posts_sql_alchemy_table(Base):
 - Its used to create, update, read and delete entries in a database table.
 - This sql aclchemy orm model is fundamentally different from the pydantic model.
 
+## Users account in FastAPI using sql alchemy orm library
 
 
 
