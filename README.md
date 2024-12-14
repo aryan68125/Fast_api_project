@@ -3972,3 +3972,6 @@ def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_fl
          return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
 ```
 
+Right now if you see that this code is saving raw password in the database which can be extremely dangerous if our database gets attacked and the data gets leaked. Now we can't protect our database completely from the cyber attacks but we can protect our user's passwords by not storing the actual password but storing their hashed string. So even if we have a data leaks our users passwords remains safe since they don't have the actual password but its encrypted form i.e hashed string of the password. <br>
+
+### Hashing user password before saving it in the database in FastAPI
