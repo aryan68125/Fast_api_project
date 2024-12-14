@@ -13,3 +13,13 @@ class BlockUnblockUsersModel(BaseModel):
 
 class SoftDeleteRestoreUserModel(BaseModel):
     is_deleted : bool
+
+class CreateUpdateUserResponse(BaseModel):
+    id : int
+    email : EmailStr
+    created_at : datetime
+    is_deleted : bool
+    is_blocked : bool
+
+    class Config:
+        orm_mode = True
