@@ -1,5 +1,5 @@
 from database_handler.sql_alchemy_db_handler import Base
-from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.schema import FetchedValue
 
@@ -13,6 +13,7 @@ class posts_sql_alchemy_table(Base):
     is_published = Column(Boolean, nullable=False, default=True, server_default="true")  # Add server_default
     is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")  # Add server_default
     created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())  # Add server_default
+    # created_by = Column(Integer, ForeignKey('UserMaster.id', ondelete='CASCADE'), nullable=False)
 
 class UserMaster(Base):
     __tablename__ = "user_master"
