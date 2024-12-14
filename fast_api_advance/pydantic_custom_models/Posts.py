@@ -4,7 +4,8 @@ from datetime import date
 from pydantic import BaseModel, Field
 from typing import Optional
 
-# POST APP PYDANTIC MODEL : request STARTS
+# POST APP PYDANTIC MODEL STARTS
+# defining requests using pydantic model starts
 class InsertPostsModel(BaseModel):
     title:str
     content: str
@@ -23,5 +24,12 @@ class SoftDeleteRestorePostsModel(BaseModel):
 
 class HardDeletePostsModel(BaseModel):
     id:int
-# POST APP PYDANTIC MODEL : request ENDS
+# defining requests using pydantic model ends
+
+
+
+# defining response using pydantic model starts
+
+# defining response using pydantic model ends
+# POST APP PYDANTIC MODEL ENDS
     
