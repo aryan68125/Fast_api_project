@@ -72,7 +72,7 @@ def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_fl
 
      return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
-#Soft delete posts
+#Soft delete or restore posts
 @app.patch('/posts/soft-delete-or-restore/{id}')
 def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db : Session = Depends(db_flush)):
      post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
