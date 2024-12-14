@@ -68,7 +68,9 @@ def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_fl
           return response(status = status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
      post_query.update(postModel.model_dump(), synchronize_session=False)
      db.commit()
-     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS)
+
+
+     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
 
 @app.delete('/post/{id}')
