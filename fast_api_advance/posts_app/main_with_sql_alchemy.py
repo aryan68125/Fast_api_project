@@ -114,7 +114,7 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
 
 
 @app.post('/users')
-def create_users(userModel : CreateUpdateUserModel, response_model = CreateUpdateUserResponse, db : Session = Depends(db_flush)):
+def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_flush)):
     try:
        new_user = sql_alchemy_models.UserMaster(**userModel.model_dump())
        db.add(new_user)
@@ -122,6 +122,13 @@ def create_users(userModel : CreateUpdateUserModel, response_model = CreateUpdat
        db.refresh(new_user)
        if not new_user:
            return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
-       return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=new_user)
+       response_data_dict = {
+           'id':new_user.id,
+           'email' : new_user.email,
+           'is_blocked' : new_user.is_blocked,
+           'is_deleted' : new_user.is_deleted,
+           'created_at' : new_user.created_at
+       }
+       return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
     except Exception as e:
          return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
