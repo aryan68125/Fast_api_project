@@ -1,11 +1,11 @@
 from datetime import datetime
 
 # import pydantic 
-from pydantic import BaseModel , Field
+from pydantic import BaseModel , Field, EmailStr
 from typing import Optional
 
 class CreateUpdateUserModel(BaseModel):
-    email : str
+    email : EmailStr
     password : str
 
 class BlockUnblockUsersModel(BaseModel):
