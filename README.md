@@ -3803,6 +3803,7 @@ db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(
 Then you won't be able to perform hard delete operation on row of a table in a database.
 
 
+## Difference between a Pydantic model or schema and sql aclhemy or orm model:
 
 
 
