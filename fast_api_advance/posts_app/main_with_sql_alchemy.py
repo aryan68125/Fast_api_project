@@ -87,6 +87,7 @@ def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db :
           return response(status=status.HTTP_200_OK,message=DATA_SOFT_DELETE_SUCCESS,data=post_query.first())
      return response(status=status.HTTP_200_OK,message=DATA_RESTORE_SUCCESS,data=post_query.first())
 
+# Update rating of a post
 @app.patch('/post/rate-posts/{id}')
 def rate_post(id:int, PostModel : RatingPostsModel,db:Session = Depends(db_flush)):
      post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
