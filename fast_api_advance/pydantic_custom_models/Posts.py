@@ -17,7 +17,6 @@ class UpdatePostsModel(BaseModel):
     is_published : bool = True
 
 class RatingPostsModel(BaseModel):
-    id:int = None
     rating : int = 0
 
 class SoftDeleteRestorePostsModel(BaseModel):
