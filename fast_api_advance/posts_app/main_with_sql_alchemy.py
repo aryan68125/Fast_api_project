@@ -30,6 +30,7 @@ app = FastAPI()
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
+#Create a post
 @app.post('/post')
 def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     new_post = sql_alchemy_models.posts_sql_alchemy_table(
@@ -98,6 +99,7 @@ def rate_post(id:int, PostModel : RatingPostsModel,db:Session = Depends(db_flush
      db.commit()
      return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
+#Hard delete post
 @app.delete('/post/{id}')
 def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     existing_post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(
