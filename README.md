@@ -3489,7 +3489,7 @@ def get_one_post(id:int,db: Session = Depends(db_flush)):
         return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
 ```
 
-### Create a row from the database table
+### Create a row in the database table
 The rest of the things will be the same like **sql_alchemy_db_handler.py** and **sql_alchemy_models.py**. <br>
 
 **PYDANTIC MODEL :** <br>
@@ -3509,7 +3509,6 @@ class InsertPostsModel(BaseModel):
     rating : int = 0
 
 class UpdatePostsModel(BaseModel):
-    id:int = None
     title:str
     content: str
     is_published : bool = True
@@ -3573,6 +3572,8 @@ def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
         return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
     return response(status=status.HTTP_201_CREATED,message=DATA_INSERT_SUCCESS,data=new_post)
 ```
+
+
 
 ### Hard delete a row from the database table
 The rest of the things will be the same like **sql_alchemy_db_handler.py** and **sql_alchemy_models.py**. <br>

@@ -12,7 +12,6 @@ class InsertPostsModel(BaseModel):
     rating : int = 0
 
 class UpdatePostsModel(BaseModel):
-    id:int = None
     title:str
     content: str
     is_published : bool = True

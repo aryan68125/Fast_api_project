@@ -24,7 +24,7 @@ from sqlalchemy import desc
 #make url parameters optional
 from typing import Optional
 #usae pydantic model to define the structure of the data that is to be inserted in the api end-point
-from pydantic_custom_models.Posts import InsertPostsModel
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel
 
 app = FastAPI()
 
@@ -33,7 +33,7 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 @app.post('/post')
 def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     new_post = sql_alchemy_models.posts_sql_alchemy_table(
-        **post.dict()
+        **post.model_dump()
     )
     db.add(new_post)
     db.commit()
@@ -59,12 +59,25 @@ def get_one_post(id:int, db: Session = Depends(db_flush)):
             return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
         return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
 
+#Update post
+@app.patch('/posts/{id}')
+def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_flush)):
+     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
+     post = post_query.first()
+     if not post:
+          return response(status = status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+     post_query.update(postModel.model_dump(), synchronize_session=False)
+     db.commit()
+     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS)
+
+
 @app.delete('/post/{id}')
 def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     existing_post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(
         sql_alchemy_models.posts_sql_alchemy_table.id == id
     )
-    if not existing_post:
+    post_exists = existing_post.first()
+    if not post_exists:
         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
     existing_post.delete(synchronize_session=False)
     db.commit()
