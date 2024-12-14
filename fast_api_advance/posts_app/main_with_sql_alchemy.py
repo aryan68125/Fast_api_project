@@ -47,58 +47,56 @@ def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
 #get all rows from the table using sql alchemy
 @app.get('/posts',)
 def get_all_posts(db:Session=Depends(db_flush)):
-        # This is gonna grab every single entry withing the posts_sql_alchemy_table
-        # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
-        posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()
-        if not len(posts):
-            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-        return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
+    # This is gonna grab every single entry withing the posts_sql_alchemy_table
+    # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
+    posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()
+    if not len(posts):
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
 #get one row from the table using sql alchemy
 @app.get('/posts/{id}',)
 def get_one_post(id:int, db: Session = Depends(db_flush)):
-        post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id).first()
-        if not post:
-            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-        return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
+    post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id).first()
+    if not post:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
 
 #Update post
 @app.patch('/posts/{id}')
 def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_flush)):
-     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
-     post = post_query.first()
-     if not post:
-          return response(status = status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-     post_query.update(postModel.model_dump(), synchronize_session=False)
-     db.commit()
-
-
-     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
+    post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
+    post = post_query.first()
+    if not post:
+         return response(status = status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    post_query.update(postModel.model_dump(), synchronize_session=False)
+    db.commit()
+    return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
 # Update rating of a post
 @app.patch('/post/rate-posts/{id}')
 def rate_post(id:int, PostModel : RatingPostsModel,db:Session = Depends(db_flush)):
-     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
-     post = post_query.first()
-     if not post:
-          return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-     post_query.update(PostModel.model_dump(),synchronize_session=False)
-     db.commit()
-     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
+    post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
+    post = post_query.first()
+    if not post:
+         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    post_query.update(PostModel.model_dump(),synchronize_session=False)
+    db.commit()
+    return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
 #Soft delete or restore posts
 @app.patch('/posts/soft-delete-or-restore/{id}')
 def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db : Session = Depends(db_flush)):
-     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
-     post = post_query.first()
-     if not post:
-          return response(status = status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-     PostModelUpdated = PostModel.model_dump()
-     PostModelUpdated['is_published'] = not PostModelUpdated.get('is_deleted')
-     post_query.update(PostModelUpdated, synchronize_session=False)
-     db.commit()
-     if PostModel.is_deleted:
-          return response(status=status.HTTP_200_OK,message=DATA_SOFT_DELETE_SUCCESS,data=post_query.first())
-     return response(status=status.HTTP_200_OK,message=DATA_RESTORE_SUCCESS,data=post_query.first())
+    post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
+    post = post_query.first()
+    if not post:
+         return response(status = status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    PostModelUpdated = PostModel.model_dump()
+    PostModelUpdated['is_published'] = not PostModelUpdated.get('is_deleted')
+    post_query.update(PostModelUpdated, synchronize_session=False)
+    db.commit()
+    if PostModel.is_deleted:
+         return response(status=status.HTTP_200_OK,message=DATA_SOFT_DELETE_SUCCESS,data=post_query.first())
+    return response(status=status.HTTP_200_OK,message=DATA_RESTORE_SUCCESS,data=post_query.first())
 
 #Hard delete post
 @app.delete('/post/{id}')
@@ -117,13 +115,13 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
 
 @app.post('/users')
 def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_flush)):
-     try:
-        new_user = sql_alchemy_models.UserMaster(**userModel.model_dump())
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        if not new_user:
-            return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
-        return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=new_user)
-     except Exception as e:
-          return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
+    try:
+       new_user = sql_alchemy_models.UserMaster(**userModel.model_dump())
+       db.add(new_user)
+       db.commit()
+       db.refresh(new_user)
+       if not new_user:
+           return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
+       return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=new_user)
+    except Exception as e:
+         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
