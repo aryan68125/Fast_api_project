@@ -112,8 +112,7 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
     existing_post.delete(synchronize_session=False)
     db.commit()
-    return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)
-        
+    return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)       
 
 #Create a user in a database table
 @app.post('/users')
