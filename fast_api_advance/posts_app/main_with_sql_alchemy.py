@@ -30,6 +30,11 @@ from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUser
 #import a utility that hashes user password
 from utility.hash_password import hash_pass_fun
 
+#Email related imports
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+
 app = FastAPI()
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
@@ -117,7 +122,7 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
 
 #Create a user in a database table
 @app.post('/users')
-def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_flush)):
+def create_users(userModel : CreateUpdateUserModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
     try:
        # before we create the user we need to create the hash of the password
        #hash the use password
@@ -129,6 +134,17 @@ def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_fl
        db.refresh(new_user)
        if not new_user:
            return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
+
+       otp = randint(100000, 999999)
+       recently_created_user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == new_user.id)
+       #save otp in this newly created user
+       recently_created_user.update({'account_activation_otp' : otp},synchronize_session=False)
+       db.commit()
+
+       title = 'Activate your account'
+       name = new_user.email
+       email_sent_to = new_user.email
+       send_email_background(background_tasks, title,email_sent_to, {'title': title, 'name': name, 'otp':otp})
        response_data_dict = {
            'id':new_user.id,
            'email' : new_user.email,
@@ -138,22 +154,5 @@ def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_fl
        }
        return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
     except Exception as e:
-         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
-
-from utility.send_mail import send_email_async, send_email_background
-from fastapi import BackgroundTasks
-from random import randint
-@app.get('/send-email/asynchronous')
-async def send_email_asynchronous():
-    title = 'Activate your account'
-    name = 'aditya.kumar@iqinfinite.in'
-    otp = randint(100000, 999999)
-    email_sent_to = 'aditya.kumar@iqinfinite.in'
-    await send_email_async(title,email_sent_to,
-    {'title': title, 'name': name, 'otp':otp})
-    return 'Success'
-@app.get('/send-email/backgroundtasks')
-def send_email_backgroundtasks(background_tasks: BackgroundTasks):
-    send_email_background(background_tasks, 'Hello World',   
-    'aditya.kumar268859@gmail.com', {'title': 'Hello World', 'name':       'John Doe'})
-    return 'Success'
+        print(e)
+        return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
