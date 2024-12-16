@@ -3442,6 +3442,17 @@ Dependencies can be injected into route functions, so that logic like fetching a
         -  Each row is returned as an instance of the ```posts_sql_alchemy_table``` model class.
         - The result will be a Python list where each element corresponds to a row in the table.
         - Until ```all``` method is called the its just a sql query that hasn't been run yet.
+- ```yield``` : 
+    - In Python, the yield keyword is used in generators, which are special types of functions that produce a sequence of values lazily (one at a time) instead of returning a single result. When a generator function is called, it does not execute immediately but returns a generator object, which can be iterated over.
+    - How ```yield``` Works?
+        - Pause and Resume Execution:
+            - When the yield statement is encountered, the function's execution is paused, and the value provided by yield is returned to the caller.
+            - The function can be resumed from where it left off when the generator is iterated again.
+        - Maintains State:
+            - Unlike a normal function, a generator retains its state between calls. This means local variables, the instruction pointer, and other states are preserved when execution is paused.
+    - Difference Between ```yield``` and ```return```:
+        - ```return```: Ends the function and sends a single value back to the caller.
+        - ```yield```: Pauses the function, sends a value to the caller, and can resume from where it left off.
 - **NOTE:** You can use this query ```posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()``` to return database table in descending order when getting all records from the database. You need to import ```desc``` from ```sqlalchemy``` like this ```posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()```
 
 ### Get one row from the database table
