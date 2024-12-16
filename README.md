@@ -4134,3 +4134,277 @@ def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_fl
 - By doing this if data leaks do happen from our database the hackers atleast won't get access to the user's password instead they will get the hashed password which they can't unhash to get the original password since they don't know what hashing algorithm has been used to hash the password in the first place.
 
 ### Setup an SMTP to send mails using fastapi-mail library, jinja2 library and an email.html template
+In here we are going to : 
+- Create a user in user_master table.
+- Generate a random otp.
+- Save that otp in the database in user_master table.
+- Send an email with the otp to the newly created user's email address. <br>
+
+Setup SMTP to send emails in FastAPI: <br>
+**fast_api_advance/utility/send_mail.py:**: <br>
+```
+import os
+from fastapi import BackgroundTasks
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from decouple import config
+from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
+
+class Envs:
+    MAIL_USERNAME = config('EMAIL_HOST_USER_GMAIL')
+    MAIL_PASSWORD = config('EMAIL_HOST_PASSWORD_GMAIL')
+    MAIL_FROM = config('EMAIL_HOST_USER_GMAIL')
+    MAIL_PORT = int(config('EMAIL_PORT_GMAIL'))
+    MAIL_SERVER = config('EMAIL_HOST_GMAIL')
+
+conf = ConnectionConfig(
+    MAIL_USERNAME=Envs.MAIL_USERNAME,
+    MAIL_PASSWORD=Envs.MAIL_PASSWORD,
+    MAIL_FROM=Envs.MAIL_FROM,
+    MAIL_PORT=Envs.MAIL_PORT,
+    MAIL_SERVER=Envs.MAIL_SERVER,
+    MAIL_STARTTLS=True,        # Replace MAIL_TLS
+    MAIL_SSL_TLS=False,        # Replace MAIL_SSL
+    USE_CREDENTIALS=True,
+    TEMPLATE_FOLDER=os.path.join(os.getcwd(), "utility/email_templates")  # Correct directory path
+)
+
+# Setup Jinja2 environment to load templates
+env = Environment(loader=FileSystemLoader(searchpath=str(Path(__file__).parent / "email_templates")))
+
+async def send_email_async(subject: str, email_to: str, body: dict):
+    # Render template with Jinja2
+    template = env.get_template("email.html")
+    rendered_body = template.render(**body)  # Unpack the dictionary
+    
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email_to],
+        body=rendered_body,  # Pass the rendered HTML string
+        subtype='html',
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
+
+def send_email_background(background_tasks: BackgroundTasks, subject: str, email_to: str, body: dict):
+    # Render template with Jinja2
+    template = env.get_template("email.html")
+    rendered_body = template.render(**body)  # Unpack the dictionary
+    
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email_to],
+        body=rendered_body,  # Pass the rendered HTML string
+        subtype='html',
+    )
+    fm = FastMail(conf)
+    background_tasks.add_task(fm.send_message, message)
+```
+**Explaination:**:<br>
+- ```fastapi.BackgroundTasks``` : 
+    - A utility from FastAPI to handle background tasks, such as sending emails without blocking the main request.
+- ```fastapi_mail.FastMail, MessageSchema, ConnectionConfig```:
+    - These are components from the fastapi-mail library to send emails:
+        - ```FastMail```: handles sending the emails.
+        - ```MessageSchema``` defines the structure of the email message.
+        - ```ConnectionConfig``` contains configuration for the email service.
+- ```decouple.config```: This is used to load environment variables, such as email credentials, securely without hardcoding them.
+- ```jinja2.Environment, FileSystemLoader```: These are used for loading and rendering templates using the Jinja2 templating engine.
+- ```pathlib.Path```: Provides an easy way to manipulate filesystem paths.
+- Environment Class (Envs):
+    - The Envs class loads configuration values from environment variables:
+    ```
+    class Envs:
+        MAIL_USERNAME = config('EMAIL_HOST_USER_GMAIL')
+        MAIL_PASSWORD = config('EMAIL_HOST_PASSWORD_GMAIL')
+        MAIL_FROM = config('EMAIL_HOST_USER_GMAIL')
+        MAIL_PORT = int(config('EMAIL_PORT_GMAIL'))
+        MAIL_SERVER = config('EMAIL_HOST_GMAIL')
+
+    ```
+    - ```config``` is used to read values from ```.env``` or environment variables.
+    - It extracts email configuration values for username, password, from email address, port, and server.
+- ConnectionConfig:
+    - The ```ConnectionConfig``` object configures the email server connection parameters using the environment variables loaded in the ```Envs``` class:
+    ```
+    conf = ConnectionConfig(
+        MAIL_USERNAME=Envs.MAIL_USERNAME,
+        MAIL_PASSWORD=Envs.MAIL_PASSWORD,
+        MAIL_FROM=Envs.MAIL_FROM,
+        MAIL_PORT=Envs.MAIL_PORT,
+        MAIL_SERVER=Envs.MAIL_SERVER,
+        MAIL_STARTTLS=True,
+        MAIL_SSL_TLS=False,
+        USE_CREDENTIALS=True,
+        TEMPLATE_FOLDER=os.path.join(os.getcwd(), "utility/email_templates")
+    )
+    ```
+    - This contains the necessary information to send an email, including security options like ```MAIL_STARTTLS``` (start TLS encryption) and ```MAIL_SSL_TLS``` (disabling SSL).
+    - ```TEMPLATE_FOLDER``` specifies the directory where email templates are stored.
+- Jinja2 Setup:
+    - ```env = Environment(loader=FileSystemLoader(searchpath=str(Path(__file__).parent / "email_templates")))```
+        - Jinja2 is set up to load HTML email templates from the directory email_templates located in the same directory as the script.
+        - The FileSystemLoader is used to load the template files into Jinja2.
+- ```send_email_async``` Function (Asynchronous Email Sending) 
+    
+    ```
+        async def send_email_async(subject: str, email_to: str, body: dict):
+        template = env.get_template("email.html")
+        rendered_body = template.render(**body)  # Unpack the dictionary into template variables
+        
+        message = MessageSchema(
+            subject=subject,
+            recipients=[email_to],
+            body=rendered_body,  # Rendered HTML
+            subtype='html',  # Content type
+        )
+        fm = FastMail(conf)
+        await fm.send_message(message)
+    ```
+    - This function sends an email asynchronously using FastAPI's async functionality.
+    - It loads the template (email.html), renders it by passing the body dictionary, and prepares the email.
+    - The FastMail object (fm) sends the email using the configuration defined earlier.
+- ```send_email_background``` Function (Email Sending in Background)
+    ```
+    def send_email_background(background_tasks: BackgroundTasks, subject: str, email_to: str, body: dict):
+    template = env.get_template("email.html")
+    rendered_body = template.render(**body)
+    
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email_to],
+        body=rendered_body,
+        subtype='html',
+    )
+    fm = FastMail(conf)
+    background_tasks.add_task(fm.send_message, message)
+    ```
+    - This function sends an email in the background using FastAPI's BackgroundTasks feature.
+    - Instead of directly sending the email, it adds the task to background_tasks, so it executes without blocking the main request.
+    - Like send_email_async, it renders the template and prepares the email message, but uses background_tasks.add_task to queue the email to be sent in the background.
+
+    **fast_api_advance/utility/email_templates/email.html**: <br>
+    Create an email template html which will be used make the email attractive to the user when thery recieve them.
+    ```
+    <html>
+    <body style="margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;">
+    <div style="width: 100%; background: #efefef; border-radius: 10px; padding: 10px;">
+    <div style="margin: 0 auto; width: 90%; text-align: center;">
+        <h1 style="background-color: rgba(0, 53, 102, 1); padding: 5px 10px; border-radius: 5px; color: white;">{{ title }}</h1>
+        <div style="margin: 30px auto; background: white; width: 40%; border-radius: 10px; padding: 50px; text-align: center;">
+        <h3 style="margin-bottom: 100px; font-size: 18px;">{{ name }} please verify your email via otp to activate your account!</h3>
+        <p style="margin-bottom: 30px;">Your OTP : {{otp}}</p>
+        <p>Please ignore this mail if your account is already active.</p>
+        <p>Regards ,  Team Aditya</p>
+        </div>
+    </div>
+    </div>
+    </body>
+    </html>
+    ```
+**.env**: <br>
+This file will contain all the secret auth related contents that are needed to send an email.
+```
+EMAIL_HOST_GMAIL=smtp.gmail.com
+EMAIL_PORT_GMAIL=587
+EMAIL_HOST_USER_GMAIL=some_email_address@gmail.com
+EMAIL_HOST_PASSWORD_GMAIL=123 zfu9 321 nhe7
+```
+**sql_alchemy_models.py**: <br>
+This model will define how the user_master table in postgres database will look like.
+```
+from database_handler.sql_alchemy_db_handler import Base
+from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean, ForeignKey, text
+from sqlalchemy.sql import func
+from sqlalchemy.schema import FetchedValue
+
+class UserMaster(Base):
+    __tablename__ = "user_master"
+    id = Column(Integer, primary_key=True,nullable=False)
+    email = Column(String,nullable=False, unique=True)
+    password = Column(String,nullable=False,)
+    is_deleted = Column(Boolean,nullable=False,server_default="false")
+    is_blocked = Column(Boolean,nullable=False,server_default="true")
+    created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
+    account_activation_otp = Column(Integer, nullable=True, server_default=text("0"))
+```
+
+**main.py**:
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel
+
+#import a utility that hashes user password
+from utility.hash_password import hash_pass_fun
+
+# Email related imports
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+@app.post('/users')
+def create_users(userModel : CreateUpdateUserModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
+    try:
+       # before we create the user we need to create the hash of the password
+       #hash the use password
+       hashed_pass_user_model = hash_pass_fun(userModel)
+       #Now that the password is hashed we can create a new user
+       new_user = sql_alchemy_models.UserMaster(**hashed_pass_user_model.model_dump())
+       db.add(new_user)
+       db.commit()
+       db.refresh(new_user)
+       if not new_user:
+           return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
+
+       otp = randint(100000, 999999)
+       recently_created_user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == new_user.id)
+       #save otp in this newly created user
+       recently_created_user.update({'account_activation_otp' : otp},synchronize_session=False)
+       db.commit()
+
+       title = 'Activate your account'
+       name = new_user.email
+       email_sent_to = new_user.email
+       send_email_background(background_tasks, title,email_sent_to, {'title': title, 'name': name, 'otp':otp})
+       response_data_dict = {
+           'id':new_user.id,
+           'email' : new_user.email,
+           'is_blocked' : new_user.is_blocked,
+           'is_deleted' : new_user.is_deleted,
+           'created_at' : new_user.created_at
+       }
+       return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
+    except Exception as e:
+        print(e)
+        return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
+```
