@@ -231,3 +231,4 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
         'created_at':user_data.created_at
     }
     return response(status=status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
+
