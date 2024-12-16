@@ -4,11 +4,11 @@ from fastapi import FastAPI, status, Depends
 from utility.common_response import response
 #import success messages from utility
 from utility.common_success_messages import (
-   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS, OTP_VERIFICATION_SUCCESS
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS, OTP_VERIFICATION_SUCCESS, MAIL_SENT_SUCCESS
 )
 #import error messages from utility
 from utility.common_error_messages import (
-   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR, OTP_VERIFICATION_ERR
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR, OTP_VERIFICATION_ERR, MAIL_SENT_ERR, USER_ACTIAVTED_ERR
 )
 
 #import sql alchemy model
@@ -25,7 +25,7 @@ from sqlalchemy import desc
 from typing import Optional
 #usae pydantic model to define the structure of the data that is to be inserted in the api end-point
 from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
-from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, VerifyOTPUsersModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, VerifyOTPUsersModel, ResendOtp
 
 #import a utility that hashes user password
 from utility.hash_password import hash_pass_fun
@@ -159,35 +159,75 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
        }
        return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
     except Exception as e:
-        print(e)
+        print(f"verify_otp : {e}")
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
 
 #verify otp that's sent to the user
 @app.patch('/users/verify-otp')
 def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
-    otp_dict = otpModel.model_dump()
-    otp_f = int(otp_dict.get('otp'))
-    uid = int(otp_dict.get('id'))
-    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == uid)
-    user_data = user.first()
-    if not user_data:
-        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-    print(f"otp from db : {user_data.account_activation_otp}")
-    print(f"otp from db : {uid}")
-    if user_data.account_activation_otp == otp_f:
-        user.update({'account_activation_otp':0, 'is_blocked':False},synchronize_session = False)
-        db.commit()
-        updated_user_data = user.first()
-        response_data = {
-            'id':updated_user_data.id,
-            'email':updated_user_data.email,
-            'is_blocked':updated_user_data.is_blocked,
-            'is_deleted':updated_user_data.is_deleted,
-            'created_at':updated_user_data.created_at
-        }
-        return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS,data=response_data)
-    else:
-        return response(status=status.HTTP_400_BAD_REQUEST,message=OTP_VERIFICATION_ERR)
+    try:
+        otp_dict = otpModel.model_dump()
+        otp_f = int(otp_dict.get('otp'))
+        uid = int(otp_dict.get('id'))
+        user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == uid)
+        user_data = user.first()
+        if not user_data:
+            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+        print(f"otp from db : {user_data.account_activation_otp}")
+        print(f"otp from db : {uid}")
+        if user_data.account_activation_otp == otp_f:
+            user.update({'account_activation_otp':0, 'is_blocked':False},synchronize_session = False)
+            db.commit()
+            updated_user_data = user.first()
+            response_data = {
+                'id':updated_user_data.id,
+                'email':updated_user_data.email,
+                'is_blocked':updated_user_data.is_blocked,
+                'is_deleted':updated_user_data.is_deleted,
+                'created_at':updated_user_data.created_at
+            }
+            return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS,data=response_data)
+        else:
+            return response(status=status.HTTP_400_BAD_REQUEST,message=OTP_VERIFICATION_ERR)
+    except Exception as e:
+        print(f"verify_otp : {e}")
+        return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, error=str(e))
+
+#Resend otp to the user if requested by them
+@app.patch('/users/send-mail/resend-otp/')
+def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,db : Session = Depends(db_flush)):
+    resend_otp_dict = resend_otp_model.model_dump()
+    user_pk = resend_otp_dict.get('id')
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == user_pk)
     
-
-
+    # create a new otp and then send it to the user's email address via Fastapi-email library
+    new_user = user.first()
+    if not new_user:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    if not new_user.is_blocked:
+        return response(status=status.HTTP_400_BAD_REQUEST,error=USER_ACTIAVTED_ERR)
+    #generate a new otp
+    print(f"Old otp : {new_user.account_activation_otp}")
+    otp = randint(100000,999999)
+    #save the new otp in the database
+    user.update({'account_activation_otp' : otp},synchronize_session = False)
+    db.commit()
+    #send otp via mail to the newly created user
+    title = 'Activate your account'
+    name = new_user.email
+    email_sent_to = new_user.email
+    send_email_background(background_tasks, title, email_sent_to, {
+        'title':title,
+        'name':name,
+        'otp':otp
+    })
+    user_data = user.first()
+    print(f"New otp : {user_data.account_activation_otp}")
+    response_data = {
+        'id':user_data.id,
+        'email':user_data.email,
+        'is_deleted': user_data.is_deleted,
+        'is_blocked':user_data.is_blocked,
+        'created_at':user_data.created_at
+    }
+    return response(status=status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)

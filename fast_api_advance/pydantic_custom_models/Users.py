@@ -17,3 +17,6 @@ class SoftDeleteRestoreUserModel(BaseModel):
 class VerifyOTPUsersModel(BaseModel):
     id : int
     otp : int
+
+class ResendOtp(BaseModel):
+    id : int

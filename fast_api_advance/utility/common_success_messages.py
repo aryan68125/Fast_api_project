@@ -9,3 +9,4 @@ DATA_RESTORE_SUCCESS = "Data restore success!"
 DATA_HARD_DELETE_SUCCESS = "Data hard delete success!"
 
 OTP_VERIFICATION_SUCCESS = "OTP verified successfully!"
+MAIL_SENT_SUCCESS = "Mail sent successfully!"
