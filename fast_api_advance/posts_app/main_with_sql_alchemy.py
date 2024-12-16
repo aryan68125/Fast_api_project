@@ -56,6 +56,7 @@ def get_all_posts(db:Session=Depends(db_flush)):
     if not len(posts):
         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
+    
 #get one row from the table using sql alchemy
 @app.get('/posts/{id}',)
 def get_one_post(id:int, db: Session = Depends(db_flush)):

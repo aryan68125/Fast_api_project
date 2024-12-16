@@ -3915,7 +3915,7 @@ class UserMaster(Base):
     created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
 ```
 
-**main.py file:** <br>
+**main.py file: (The naive way)** <br>
 ```
 from fastapi import FastAPI, status, Depends
 
