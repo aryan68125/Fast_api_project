@@ -3309,6 +3309,67 @@ def db_flush():
     finally:
         db_session.close()
 ```
+- ```connection_string = f"postgresql://{config('DB_USERNAME')}:{config('DB_PASSWORD')}@{config('DB_IP')}/{config('DB_NAME')}"```
+    - The connection_string specifies how to connect to a PostgreSQL database.
+    - Format: ```postgresql://<username>:<password>@<host>/<dbname>```
+    - Components:
+        - ```config('DB_USERNAME')```: Fetches the database username from the environment or configuration.
+        - ```config('DB_PASSWORD')```: Fetches the database password.
+        - ```config('DB_IP')```: The database host or IP address.
+        - ```config('DB_NAME')```: The name of the database.
+    - Purpose: The connection string is used by SQLAlchemy to establish a connection to the PostgreSQL database.
+- ```db_engine = create_engine(connection_string)```:
+    - create_engine is a SQLAlchemy function that creates a connection to the database using the provided connection string.
+    - ```db_engine```:
+        - Acts as the core interface to communicate with the database.
+        - Manages connections, executes SQL queries, and interacts with the database.
+- ```SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)``` : 
+    - ```sessionmaker``` is a factory function for creating new SQLAlchemy ```Session``` objects.
+    - Parameters:
+        - ```autocommit=False```: Disables automatic transaction commits. You must explicitly commit transactions.
+        - ```autoflush=False```: Prevents automatic flushing (writing changes to the database before a query is executed).
+        - ```bind=db_engine```: Binds the session to the db_engine, allowing it to use the database connection.
+    - Purpose: ```SessionLocal``` creates individual session objects that are used to interact with the database in a thread-safe way.
+- ```Base = declarative_base()```:
+    - ```declarative_base``` is a SQLAlchemy class that acts as the base for all ORM models.
+    - Purpose:
+        - All your ORM models will inherit from this ```Base``` class.
+        - An example of orm models : 
+        ```
+        from database_handler.sql_alchemy_db_handler import Base
+        from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean, ForeignKey
+        from sqlalchemy.sql import func
+        from sqlalchemy.schema import FetchedValue
+
+        class posts_sql_alchemy_table(Base):
+            __tablename__ = "posts_sql_alchemy_table"
+            #define all of the columns
+            id = Column(Integer, primary_key=True, nullable=False)
+            title = Column(String, nullable=False)
+            content = Column(Text, nullable=False)
+            rating = Column(Integer, nullable=False, default=0, server_default="0")  # Add server_default
+            is_published = Column(Boolean, nullable=False, default=True, server_default="true")  # Add server_default
+            is_deleted = Column(Boolean, nullable=False, default=False, server_default="false")  # Add server_default
+            created_at = Column(DateTime, nullable=False, default=func.now(), server_default=func.now())  # Add 
+        ```
+        - Base.metadata contains metadata about all the models, which can be used to create tables in the database.
+- Explaining ```db_flush``` function : 
+    ```
+    def db_flush():
+    db_session = SessionLocal()
+    try:
+        yield db_session
+    finally:
+        db_session.close()
+    ```
+    - This function provides a managed way to create and clean up database sessions, typically used in frameworks like FastAPI or Flask.
+    - How It Works:
+        - ```db_session = SessionLocal()```: Creates a new session using ```SessionLocal```.
+        - ```yield db_session```: Yields the session to execute queries in the calling code.
+        - ```db_session.close()```: Ensures the session is closed after use, even if an exception occurs.
+    - Purpose:
+        - Acts as a "dependency" function in frameworks like FastAPI.
+        - Helps ensure proper cleanup of database connections to prevent resource leaks.
 
 <br>
 
