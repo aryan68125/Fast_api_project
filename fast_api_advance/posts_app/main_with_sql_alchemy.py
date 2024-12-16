@@ -135,6 +135,7 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
        if not new_user:
            return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
 
+       # Generate otp and save it in the user_master table in the record which is recently created.
        otp = randint(100000, 999999)
        recently_created_user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == new_user.id)
        #save otp in this newly created user
