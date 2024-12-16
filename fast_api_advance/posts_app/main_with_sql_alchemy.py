@@ -56,7 +56,7 @@ def get_all_posts(db:Session=Depends(db_flush)):
     if not len(posts):
         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
-    
+
 #get one row from the table using sql alchemy
 @app.get('/posts/{id}',)
 def get_one_post(id:int, db: Session = Depends(db_flush)):
@@ -139,3 +139,21 @@ def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_fl
        return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
     except Exception as e:
          return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
+
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+@app.get('/send-email/asynchronous')
+async def send_email_asynchronous():
+    title = 'Activate your account'
+    name = 'aditya.kumar@iqinfinite.in'
+    otp = randint(100000, 999999)
+    email_sent_to = 'aditya.kumar@iqinfinite.in'
+    await send_email_async(title,email_sent_to,
+    {'title': title, 'name': name, 'otp':otp})
+    return 'Success'
+@app.get('/send-email/backgroundtasks')
+def send_email_backgroundtasks(background_tasks: BackgroundTasks):
+    send_email_background(background_tasks, 'Hello World',   
+    'aditya.kumar268859@gmail.com', {'title': 'Hello World', 'name':       'John Doe'})
+    return 'Success'

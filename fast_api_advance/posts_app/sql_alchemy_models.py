@@ -1,5 +1,5 @@
 from database_handler.sql_alchemy_db_handler import Base
-from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean, ForeignKey, text
 from sqlalchemy.sql import func
 from sqlalchemy.schema import FetchedValue
 
@@ -23,5 +23,6 @@ class UserMaster(Base):
     is_deleted = Column(Boolean,nullable=False,server_default="false")
     is_blocked = Column(Boolean,nullable=False,server_default="true")
     created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
+    account_activation_otp = Column(Integer, nullable=True, server_default=text("0"))
 
 

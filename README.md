@@ -4132,3 +4132,5 @@ def create_users(userModel : CreateUpdateUserModel, db : Session = Depends(db_fl
        userModel.password = hashed_password
     ```
 - By doing this if data leaks do happen from our database the hackers atleast won't get access to the user's password instead they will get the hashed password which they can't unhash to get the original password since they don't know what hashing algorithm has been used to hash the password in the first place.
+
+### Setup an SMTP to send mails using fastapi-mail library, jinja2 library and an email.html template
