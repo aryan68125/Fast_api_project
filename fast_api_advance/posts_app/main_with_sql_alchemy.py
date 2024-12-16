@@ -120,6 +120,10 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     db.commit()
     return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)       
 
+
+
+
+
 #Create a user in a database table
 @app.post('/users/register')
 def create_users(userModel : CreateUpdateUserModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):

@@ -4141,6 +4141,11 @@ In here we are going to :
 - Send an email with the otp to the newly created user's email address. <br>
 
 Setup SMTP to send emails in FastAPI: <br>
+**install fastapi-mail library** : <br>
+- Install fastapi-mail library in your virtual environment
+    ```pip install fastapi-mail```
+- Update the requirements.txt file
+
 **fast_api_advance/utility/send_mail.py:**: <br>
 ```
 import os
@@ -4429,4 +4434,76 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
     except Exception as e:
         print(e)
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
+```
+
+**Verify otp**: <br>
+An api end-point to verify otp after the user is created in the database. After the otp is verified the account of the user must be activated hence forth the user should be able to login in the fastAPI web application.
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS, OTP_VERIFICATION_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR, OTP_VERIFICATION_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, VerifyOTPUsersModel
+
+#import a utility that hashes user password
+from utility.hash_password import hash_pass_fun
+
+#Email related imports
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+#verify otp that's sent to the user
+@app.patch('/users/verify-otp')
+def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
+    otp_dict = otpModel.model_dump()
+    otp_f = int(otp_dict.get('otp'))
+    uid = int(otp_dict.get('id'))
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == uid)
+    user_data = user.first()
+    if not user_data:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    print(f"otp from db : {user_data.account_activation_otp}")
+    print(f"otp from db : {uid}")
+    if user_data.account_activation_otp == otp_f:
+        user.update({'account_activation_otp':0, 'is_blocked':False},synchronize_session = False)
+        db.commit()
+        updated_user_data = user.first()
+        response_data = {
+            'id':updated_user_data.id,
+            'email':updated_user_data.email,
+            'is_blocked':updated_user_data.is_blocked,
+            'is_deleted':updated_user_data.is_deleted,
+            'created_at':updated_user_data.created_at
+        }
+        return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS,data=response_data)
+    else:
+        return response(status=status.HTTP_400_BAD_REQUEST,message=OTP_VERIFICATION_ERR)
 ```
