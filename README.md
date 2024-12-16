@@ -4328,6 +4328,28 @@ class UserMaster(Base):
     created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
     account_activation_otp = Column(Integer, nullable=True, server_default=text("0"))
 ```
+**pydantic model**: <br>
+```
+from datetime import datetime
+
+# import pydantic 
+from pydantic import BaseModel , Field, EmailStr
+from typing import Optional
+
+class CreateUpdateUserModel(BaseModel):
+    email : EmailStr
+    password : str
+
+class BlockUnblockUsersModel(BaseModel):
+    is_blocked : bool
+
+class SoftDeleteRestoreUserModel(BaseModel):
+    is_deleted : bool
+
+class VerifyOTPUsersModel(BaseModel):
+    id : int
+    otp : int
+```
 
 **main.py**:
 ```

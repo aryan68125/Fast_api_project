@@ -13,3 +13,7 @@ class BlockUnblockUsersModel(BaseModel):
 
 class SoftDeleteRestoreUserModel(BaseModel):
     is_deleted : bool
+
+class VerifyOTPUsersModel(BaseModel):
+    id : int
+    otp : int

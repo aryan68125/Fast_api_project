@@ -8,3 +8,5 @@ DATA_UPDATE_ERR = "Data update failed!"
 DATA_SOFT_DELETE_ERR = "Data soft delete failed!"
 DATA_RESTORE_ERR = "Data restore operation failed!"
 DATA_HARD_DELETE_ERR = "Data hard delete failed!"
+
+OTP_VERIFICATION_ERR = "OTP do not match!"
