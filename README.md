@@ -3969,6 +3969,11 @@ class BlockUnblockUsersModel(BaseModel):
 class SoftDeleteRestoreUserModel(BaseModel):
     is_deleted : bool
 ```
+**Explaination** : <br>
+- ```EmailStr``` Import this from pydantic library
+    - But for this ```EmailStr``` to work you need ```email_validator``` library.
+    - ```EmailStr``` makes sure that the email in the json data that's comming from the fron-end is validated properly
+    - We can use this library for that ```email_validator==2.2.0``` install this using ```pip install email_validator``` 
 
 **sql alchemy orm model:** <br>
 ```
