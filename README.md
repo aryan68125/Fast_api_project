@@ -5199,6 +5199,13 @@ Explaination : <br>
 - Then initialize it in the users.py route 
     - ```router = APIRouter()```
 - Now replace ```@app``` with ```@router``` <br>
+- ```
+    router = APIRouter(
+        prefix="/users"
+    )
+  ```
+    The reason we have the ```prefix``` in ```APIRouter``` so that we don't have to copy and paste the base url all the time every time we create a new api end-point.
+
 **posts.py**:<br>
 Perform the same procedure like in the users.py file inside routers folder <br>
 ```
@@ -5357,4 +5364,6 @@ Explaination : <br>
     ```
 
 <br>
+
+# Group the api end-points based on their function in swagger docs provided by FastAPI
 
