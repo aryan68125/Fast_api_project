@@ -610,7 +610,7 @@ Hence I can't have a post having a blank title or body so how do we make sure th
 
 The way to force the client to send data in a way that the back-end api expects it to be is to use Pydantic. Pydantic is used to define how our schema should look like.
 
-## Pydantic Models
+# Pydantic Models
 Pydantic has nothing to do with FastAPI. It is it's own completely different and separate library that you can use with any of the python application. FastAPI just makes use of it so that we can define the schema.
 #### Example : How to use Pydantic to define a schema for the api-end point
 pydantic models named Blog.py
@@ -4906,3 +4906,6 @@ def get_user_details(id : int, db : Session = Depends(db_flush)):
     }
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=response_data)
 ```
+
+# Routes in FastAPI
+Without this also we can create a FastAPI application but in this case our ```main.py``` file will become a lot cluttered.
