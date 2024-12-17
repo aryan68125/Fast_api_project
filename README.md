@@ -5755,3 +5755,13 @@ JWT authentication is stateless i.e There is nothing in our database that keeps 
 
 **JWT token breakdown :**
 ![image info](fast_api_advance/images/readme_images/jwt_token_breakdown.png) <br>
+- Header : It includes the meta-data about the token
+    - ```HS256``` : Is the algorithm which is used to sign the token. Signing the token is similar to hashing the token.
+    - ```typ``` is set to ```JWT``` Which is telling us that the token is the JWT token.
+- Payload : The payload of the token is ultimately up to you. You can send any piece of information in payload.
+    - Make sure that you don't put anything sensitive in the payload because the token itself is not encrypted.
+    - Also one thing to note that if you jam in more information the more bandwidth it will take.
+- Signature : A signature is a combination of header + playload + secret (we are keep a special password on our api not for the client)
+    - We will use this signature to determine if the token is valid or not.
+    - This is important because it prevents users from tampering with the tokens and do some malicious things in our application.
+    - It's primary goal is to ensure data integrity
