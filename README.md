@@ -5765,3 +5765,6 @@ JWT authentication is stateless i.e There is nothing in our database that keeps 
     - We will use this signature to determine if the token is valid or not.
     - This is important because it prevents users from tampering with the tokens and do some malicious things in our application.
     - It's primary goal is to ensure data integrity
+
+## Purpose of a signature : 
+![image info](fast_api_advance/images/readme_images/jwt_signature_diagram.png)
