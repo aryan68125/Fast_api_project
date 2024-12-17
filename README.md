@@ -4980,12 +4980,14 @@ from utility.send_mail import send_email_async, send_email_background
 from fastapi import BackgroundTasks
 from random import randint
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/users"
+)
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 #Create a user in a database table
-@router.post('/users/register')
+@router.post('/register')
 def create_users(userModel : CreateUpdateUserModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
     try:
        # before we create the user we need to create the hash of the password
@@ -5031,7 +5033,7 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
 
 #verify otp that's sent to the user
-@router.patch('/users/verify-otp')
+@router.patch('/verify-otp')
 def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
     try:
         otp_dict = otpModel.model_dump()
@@ -5064,7 +5066,7 @@ def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush))
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, error=str(e))
 
 #Resend otp to the user if requested by them
-@router.patch('/users/send-mail/resend-otp/')
+@router.patch('/send-mail/resend-otp/')
 def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,db : Session = Depends(db_flush)):
     resend_otp_dict = resend_otp_model.model_dump()
     user_pk = resend_otp_dict.get('id')
@@ -5107,7 +5109,7 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
     return response(status=status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
 
 # Request a password change for the users whose account is activated
-@router.patch('/users/send-mail/request-reset-password')
+@router.patch('/send-mail/request-reset-password')
 def request_reset_password(request_reset_password_model : RequestResetPasswordModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
     request_reset_password_dictionary = request_reset_password_model.model_dump()
     email = request_reset_password_dictionary.get('email')
@@ -5138,7 +5140,7 @@ def request_reset_password(request_reset_password_model : RequestResetPasswordMo
     return response(status = status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
 
 # Verify the otp generated for reset password
-@router.patch('/users/verify-otp/reset-password')
+@router.patch('/verify-otp/reset-password')
 def verify_otp_reset_password(reset_password_model : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
     reset_password_dict = reset_password_model.model_dump()
     id = reset_password_dict.get('id')
@@ -5154,7 +5156,7 @@ def verify_otp_reset_password(reset_password_model : VerifyOTPUsersModel, db : S
     return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS)
 
 # After otp verification allow user to reset his account's password
-@router.patch('/users/reset-password')
+@router.patch('/reset-password')
 def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depends(db_flush)):
     reset_password_model_dict = reset_password_model.model_dump()
     id = reset_password_model_dict.get('id')
@@ -5173,7 +5175,7 @@ def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depen
 
 # Create an api end-point that must return the logged in user's detail 
 # If you are not able to access this api then your access token is expired and you need to get a new access token.
-@router.get('/users/{id}')
+@router.get('/{id}')
 def get_user_details(id : int, db : Session = Depends(db_flush)):
     user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_deleted == False).first()
     if not user:
@@ -5230,12 +5232,14 @@ from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, Sof
 
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/posts"
+)
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 #Create a post
-@router.post('/post')
+@router.post('/')
 def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     new_post = sql_alchemy_models.posts_sql_alchemy_table(
         **post.model_dump()
@@ -5248,7 +5252,7 @@ def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     return response(status=status.HTTP_201_CREATED,message=DATA_INSERT_SUCCESS,data=new_post)
 
 #get all rows from the table using sql alchemy
-@router.get('/posts',)
+@router.get('/',)
 def get_all_posts(db:Session=Depends(db_flush)):
     # This is gonna grab every single entry withing the posts_sql_alchemy_table
     # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
@@ -5258,7 +5262,7 @@ def get_all_posts(db:Session=Depends(db_flush)):
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
 
 #get one row from the table using sql alchemy
-@router.get('/posts/{id}',)
+@router.get('/{id}',)
 def get_one_post(id:int, db: Session = Depends(db_flush)):
     post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id).first()
     if not post:
@@ -5266,7 +5270,7 @@ def get_one_post(id:int, db: Session = Depends(db_flush)):
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
 
 #Update post
-@router.patch('/posts/{id}')
+@router.patch('/{id}')
 def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_flush)):
     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
     post = post_query.first()
@@ -5277,7 +5281,7 @@ def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_fl
     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
 # Update rating of a post
-@router.patch('/post/rate-posts/{id}')
+@router.patch('/rate-posts/{id}')
 def rate_post(id:int, PostModel : RatingPostsModel,db:Session = Depends(db_flush)):
     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
     post = post_query.first()
@@ -5288,7 +5292,7 @@ def rate_post(id:int, PostModel : RatingPostsModel,db:Session = Depends(db_flush
     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
 #Soft delete or restore posts
-@router.patch('/posts/soft-delete-or-restore/{id}')
+@router.patch('/soft-delete-or-restore/{id}')
 def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db : Session = Depends(db_flush)):
     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
     post = post_query.first()
@@ -5303,7 +5307,7 @@ def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db :
     return response(status=status.HTTP_200_OK,message=DATA_RESTORE_SUCCESS,data=post_query.first())
 
 #Hard delete post
-@router.delete('/post/{id}')
+@router.delete('/{id}')
 def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     existing_post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(
         sql_alchemy_models.posts_sql_alchemy_table.id == id
@@ -5313,7 +5317,7 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
     existing_post.delete(synchronize_session=False)
     db.commit()
-    return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)       
+    return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)          
 ```
 
 **main.py file** : ```[main_with_sql_alchemy.py]```  -> <br>
