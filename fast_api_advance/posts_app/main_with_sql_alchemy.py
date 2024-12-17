@@ -177,7 +177,7 @@ def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush))
         otp_dict = otpModel.model_dump()
         otp_f = int(otp_dict.get('otp'))
         uid = int(otp_dict.get('id'))
-        user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == uid)
+        user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == uid, sql_alchemy_models.UserMaster.is_deleted == False)
         user_data = user.first()
         if not user_data:
             return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
@@ -208,7 +208,7 @@ def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush))
 def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,db : Session = Depends(db_flush)):
     resend_otp_dict = resend_otp_model.model_dump()
     user_pk = resend_otp_dict.get('id')
-    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == user_pk)
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == user_pk, sql_alchemy_models.UserMaster.is_deleted == False)
     
     # create a new otp and then send it to the user's email address via Fastapi-email library
     new_user = user.first()
@@ -251,7 +251,7 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
 def request_reset_password(request_reset_password_model : RequestResetPasswordModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
     request_reset_password_dictionary = request_reset_password_model.model_dump()
     email = request_reset_password_dictionary.get('email')
-    users = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == email, sql_alchemy_models.UserMaster.is_blocked == False)
+    users = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == email, sql_alchemy_models.UserMaster.is_blocked == False, sql_alchemy_models.UserMaster.is_deleted == False)
     requested_user = users.first()
     if not requested_user:
         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
@@ -283,7 +283,7 @@ def verify_otp_reset_password(reset_password_model : VerifyOTPUsersModel, db : S
     reset_password_dict = reset_password_model.model_dump()
     id = reset_password_dict.get('id')
     otp_f = reset_password_dict.get('otp')
-    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_blocked == False, sql_alchemy_models.UserMaster.verify_otp == True, sql_alchemy_models.UserMaster.account_activation_otp != 0)
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_blocked == False, sql_alchemy_models.UserMaster.verify_otp == True, sql_alchemy_models.UserMaster.account_activation_otp != 0, sql_alchemy_models.UserMaster.is_deleted == False)
     user_data = user.first()
     if not user_data:
         return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_NOT_FOUND_ERR)
@@ -300,7 +300,7 @@ def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depen
     id = reset_password_model_dict.get('id')
     password = reset_password_model_dict.get('password')
     password2 = reset_password_model_dict.get('password2')
-    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.account_activation_otp == 0, sql_alchemy_models.UserMaster.verify_otp == True)
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.account_activation_otp == 0, sql_alchemy_models.UserMaster.verify_otp == True, sql_alchemy_models.UserMaster.is_deleted == False)
     user_data = user.first()
     if not user_data:
         return response(status=status.HTTP_404_NOT_FOUND,message=DATA_NOT_FOUND_ERR)
@@ -310,6 +310,22 @@ def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depen
     user.update({'password':hash_reset_pass, 'verify_otp':False},synchronize_session=False)
     db.commit()
     return response(status=status.HTTP_200_OK,message=PASSWORD_RESET_SUCCESS)
+
+# Create an api end-point that must return the logged in user's detail 
+# If you are not able to access this api then your access token is expired and you need to get a new access token.
+@app.get('/users/{id}')
+def get_user_details(id : int, db : Session = Depends(db_flush)):
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_deleted == False).first()
+    if not user:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    response_data = {
+        'id':user.id,
+        'email':user.email,
+        'is_deleted':user.is_deleted,
+        'is_blocked':user.is_blocked,
+        'created_at':user.created_at
+    }
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=response_data)
 
 # Login user
 
