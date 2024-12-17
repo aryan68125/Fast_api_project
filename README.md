@@ -4909,3 +4909,4 @@ def get_user_details(id : int, db : Session = Depends(db_flush)):
 
 # Routes in FastAPI
 Without this also we can create a FastAPI application but in this case our ```main.py``` file will become a lot cluttered.
+As our development goes our FastAPI apps may become more and more complex hence our ```main.py``` file will become more and more cluttered with path operations. In order to mitigate this we will eventually have to use routing in FastAPI.
