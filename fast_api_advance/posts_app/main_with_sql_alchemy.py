@@ -149,7 +149,15 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
        title = 'Activate your account'
        name = new_user.email
        email_sent_to = new_user.email
-       send_email_background(background_tasks, title,email_sent_to, {'title': title, 'name': name, 'otp':otp})
+       message1 = "please verify your email via otp to activate your account!"
+       message2="Please ignore this mail if your account is already active."
+       send_email_background(background_tasks, title,email_sent_to, {
+        'title': title, 
+        'name': name, 
+        'otp':otp,
+        'message1':message1,
+        "message2":message2
+        })
        response_data_dict = {
            'id':new_user.id,
            'email' : new_user.email,
@@ -159,7 +167,7 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
        }
        return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
     except Exception as e:
-        print(f"verify_otp : {e}")
+        print(f"create_users : {e}")
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
 
 #verify otp that's sent to the user
@@ -175,6 +183,8 @@ def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush))
             return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
         print(f"otp from db : {user_data.account_activation_otp}")
         print(f"otp from db : {uid}")
+        if not user_data.is_blocked:
+            return response(status=status.HTTP_400_BAD_REQUEST, error=USER_ACTIAVTED_ERR)
         if user_data.account_activation_otp == otp_f:
             user.update({'account_activation_otp':0, 'is_blocked':False},synchronize_session = False)
             db.commit()
@@ -216,10 +226,14 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
     title = 'Activate your account'
     name = new_user.email
     email_sent_to = new_user.email
+    message1 = "please verify your email via otp to activate your account!"
+    message2 = "Please ignore this mail if your account is already active."
     send_email_background(background_tasks, title, email_sent_to, {
         'title':title,
         'name':name,
-        'otp':otp
+        'otp':otp,
+        'message1':message1,
+        'message2':message2
     })
     user_data = user.first()
     print(f"New otp : {user_data.account_activation_otp}")
@@ -232,3 +246,19 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
     }
     return response(status=status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
 
+# Request a password change for the users whoes accounts are activated
+@app.patch('/users/send-mail/request-reset-password')
+def request_reset_password(request_reset_password_model : ResendOtp, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
+    request_reset_password_dictionary = request_reset_password_model.model_dump()
+    id = request_reset_password_dictionary.get('id')
+    users = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_blocked == False)
+    requested_user = users.first()
+    if not requested_user:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    title = 'Reset your password.'
+    name = requested_user.email
+
+
+# Login user
+
+# Logout user
