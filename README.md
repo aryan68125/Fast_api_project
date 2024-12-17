@@ -5768,3 +5768,5 @@ JWT authentication is stateless i.e There is nothing in our database that keeps 
 
 ## Purpose of a signature : 
 ![image info](fast_api_advance/images/readme_images/jwt_signature_diagram.png)
+Explaination : Follow this link for explaination of the diagram
+```https://youtu.be/BN9xKkzC55I?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=543```
