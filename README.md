@@ -4408,7 +4408,7 @@ app = FastAPI()
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
-@app.post('/users')
+@app.post('/users/register')
 def create_users(userModel : CreateUpdateUserModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
     try:
        # before we create the user we need to create the hash of the password
@@ -4422,6 +4422,7 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
        if not new_user:
            return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_INSERT_ERR)
 
+       # Generate otp and save it in the user_master table in the record which is recently created.
        otp = randint(100000, 999999)
        recently_created_user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == new_user.id)
        #save otp in this newly created user
@@ -4431,7 +4432,15 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
        title = 'Activate your account'
        name = new_user.email
        email_sent_to = new_user.email
-       send_email_background(background_tasks, title,email_sent_to, {'title': title, 'name': name, 'otp':otp})
+       message1 = "please verify your email via otp to activate your account!"
+       message2="Please ignore this mail if your account is already active."
+       send_email_background(background_tasks, title,email_sent_to, {
+        'title': title, 
+        'name': name, 
+        'otp':otp,
+        'message1':message1,
+        "message2":message2
+        })
        response_data_dict = {
            'id':new_user.id,
            'email' : new_user.email,
@@ -4441,7 +4450,7 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
        }
        return response(status=status.HTTP_201_CREATED,message = DATA_INSERT_SUCCESS,data=response_data_dict)
     except Exception as e:
-        print(e)
+        print(f"create_users : {e}")
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
 ```
 
@@ -4492,29 +4501,35 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 #verify otp that's sent to the user
 @app.patch('/users/verify-otp')
 def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
-    otp_dict = otpModel.model_dump()
-    otp_f = int(otp_dict.get('otp'))
-    uid = int(otp_dict.get('id'))
-    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == uid)
-    user_data = user.first()
-    if not user_data:
-        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
-    print(f"otp from db : {user_data.account_activation_otp}")
-    print(f"otp from db : {uid}")
-    if user_data.account_activation_otp == otp_f:
-        user.update({'account_activation_otp':0, 'is_blocked':False},synchronize_session = False)
-        db.commit()
-        updated_user_data = user.first()
-        response_data = {
-            'id':updated_user_data.id,
-            'email':updated_user_data.email,
-            'is_blocked':updated_user_data.is_blocked,
-            'is_deleted':updated_user_data.is_deleted,
-            'created_at':updated_user_data.created_at
-        }
-        return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS,data=response_data)
-    else:
-        return response(status=status.HTTP_400_BAD_REQUEST,message=OTP_VERIFICATION_ERR)
+    try:
+        otp_dict = otpModel.model_dump()
+        otp_f = int(otp_dict.get('otp'))
+        uid = int(otp_dict.get('id'))
+        user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == uid)
+        user_data = user.first()
+        if not user_data:
+            return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+        print(f"otp from db : {user_data.account_activation_otp}")
+        print(f"otp from db : {uid}")
+        if not user_data.is_blocked:
+            return response(status=status.HTTP_400_BAD_REQUEST, error=USER_ACTIAVTED_ERR)
+        if user_data.account_activation_otp == otp_f:
+            user.update({'account_activation_otp':0, 'is_blocked':False},synchronize_session = False)
+            db.commit()
+            updated_user_data = user.first()
+            response_data = {
+                'id':updated_user_data.id,
+                'email':updated_user_data.email,
+                'is_blocked':updated_user_data.is_blocked,
+                'is_deleted':updated_user_data.is_deleted,
+                'created_at':updated_user_data.created_at
+            }
+            return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS,data=response_data)
+        else:
+            return response(status=status.HTTP_400_BAD_REQUEST,message=OTP_VERIFICATION_ERR)
+    except Exception as e:
+        print(f"verify_otp : {e}")
+        return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, error=str(e))
 ```
 
 **Request a new otp**: <br>
@@ -4584,10 +4599,14 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
     title = 'Activate your account'
     name = new_user.email
     email_sent_to = new_user.email
+    message1 = "please verify your email via otp to activate your account!"
+    message2 = "Please ignore this mail if your account is already active."
     send_email_background(background_tasks, title, email_sent_to, {
         'title':title,
         'name':name,
-        'otp':otp
+        'otp':otp,
+        'message1':message1,
+        'message2':message2
     })
     user_data = user.first()
     print(f"New otp : {user_data.account_activation_otp}")
