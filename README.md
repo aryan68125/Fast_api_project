@@ -4335,6 +4335,7 @@ class UserMaster(Base):
     password = Column(String,nullable=False,)
     is_deleted = Column(Boolean,nullable=False,server_default="false")
     is_blocked = Column(Boolean,nullable=False,server_default="true")
+    verify_otp = Column(Boolean,nullable=False,server_default="false")
     created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
     account_activation_otp = Column(Integer, nullable=True, server_default=text("0"))
 ```
@@ -4362,6 +4363,14 @@ class VerifyOTPUsersModel(BaseModel):
 
 class ResendOtp(BaseModel):
     id : int
+
+class RequestResetPasswordModel(BaseModel):
+    email : EmailStr
+
+class ResetPasswordModel(BaseModel):
+    id: int
+    password : str
+    password2 : str
 ```
 
 **main.py**: <br>
@@ -4618,4 +4627,207 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
         'created_at':user_data.created_at
     }
     return response(status=status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
+```
+
+**Request reset password** <br>
+- In here we are going to ask email address from the client. 
+- Generate a random otp
+- After recieving that we will send an otp to that email if that exist in the database.
+- After sending email we will save the generated otp in the database <br>
+Code : <br>
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS, OTP_VERIFICATION_SUCCESS, MAIL_SENT_SUCCESS, PASSWORD_RESET_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR, OTP_VERIFICATION_ERR, MAIL_SENT_ERR, USER_ACTIAVTED_ERR, PASSWORD_MATCH_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, VerifyOTPUsersModel, ResendOtp, RequestResetPasswordModel, ResetPasswordModel
+
+#import a utility that hashes user password
+from utility.hash_password import hash_pass_fun, hash_reset_pass_fun
+
+#Email related imports
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+# Request a password change for the users whose account is activated
+@app.patch('/users/send-mail/request-reset-password')
+def request_reset_password(request_reset_password_model : RequestResetPasswordModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
+    request_reset_password_dictionary = request_reset_password_model.model_dump()
+    email = request_reset_password_dictionary.get('email')
+    users = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == email, sql_alchemy_models.UserMaster.is_blocked == False)
+    requested_user = users.first()
+    if not requested_user:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    otp = randint(100000,999999)
+    users.update({'account_activation_otp' : otp, 'verify_otp':True},synchronize_session = False)
+    db.commit()
+    title = 'Reset your password.'
+    name = requested_user.email
+    email_sent_to = requested_user.email
+    message1 = "please verify your email via otp to reset your password!"
+    message2 = "Please ignore this mail if you have already reset your password."
+    send_email_background(background_tasks, title, email_sent_to, {
+        'title':title,
+        'name':name,
+        'otp':otp,
+        'message1':message1,
+        'message2':message2
+    })
+    user_response_db = users.first()
+    response_data = {
+        'id':user_response_db.id,
+        'email':user_response_db.email,
+    }
+    return response(status = status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
+```
+
+**verify otp for reset password**: <br>
+Verify otp for the reset password <br>
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS, OTP_VERIFICATION_SUCCESS, MAIL_SENT_SUCCESS, PASSWORD_RESET_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR, OTP_VERIFICATION_ERR, MAIL_SENT_ERR, USER_ACTIAVTED_ERR, PASSWORD_MATCH_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, VerifyOTPUsersModel, ResendOtp, RequestResetPasswordModel, ResetPasswordModel
+
+#import a utility that hashes user password
+from utility.hash_password import hash_pass_fun, hash_reset_pass_fun
+
+#Email related imports
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+# Verify the otp generated for reset password
+@app.patch('/users/verify-otp/reset-password')
+def verify_otp_reset_password(reset_password_model : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
+    reset_password_dict = reset_password_model.model_dump()
+    id = reset_password_dict.get('id')
+    otp_f = reset_password_dict.get('otp')
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_blocked == False, sql_alchemy_models.UserMaster.verify_otp == True, sql_alchemy_models.UserMaster.account_activation_otp != 0)
+    user_data = user.first()
+    if not user_data:
+        return response(status=status.HTTP_400_BAD_REQUEST,error=DATA_NOT_FOUND_ERR)
+    if otp_f != user_data.account_activation_otp:
+        return response(status=status.HTTP_400_BAD_REQUEST,error=OTP_VERIFICATION_ERR)
+    user.update({'account_activation_otp':0},synchronize_session=False)
+    db.commit()
+    return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS)
+```
+
+**reset password**: <br>
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS, OTP_VERIFICATION_SUCCESS, MAIL_SENT_SUCCESS, PASSWORD_RESET_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR, OTP_VERIFICATION_ERR, MAIL_SENT_ERR, USER_ACTIAVTED_ERR, PASSWORD_MATCH_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, VerifyOTPUsersModel, ResendOtp, RequestResetPasswordModel, ResetPasswordModel
+
+#import a utility that hashes user password
+from utility.hash_password import hash_pass_fun, hash_reset_pass_fun
+
+#Email related imports
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+# After otp verification allow user to reset his account's password
+@app.patch('/users/reset-password')
+def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depends(db_flush)):
+    reset_password_model_dict = reset_password_model.model_dump()
+    id = reset_password_model_dict.get('id')
+    password = reset_password_model_dict.get('password')
+    password2 = reset_password_model_dict.get('password2')
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.account_activation_otp == 0, sql_alchemy_models.UserMaster.verify_otp == True)
+    user_data = user.first()
+    if not user_data:
+        return response(status=status.HTTP_404_NOT_FOUND,message=DATA_NOT_FOUND_ERR)
+    if password != password2:
+        return response(status=status.HTTP_400_BAD_REQUEST,error=PASSWORD_MATCH_ERR)
+    hash_reset_pass = hash_reset_pass_fun(password)
+    user.update({'password':hash_reset_pass, 'verify_otp':False},synchronize_session=False)
+    db.commit()
+    return response(status=status.HTTP_200_OK,message=PASSWORD_RESET_SUCCESS)
 ```
