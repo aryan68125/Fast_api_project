@@ -4847,3 +4847,62 @@ def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depen
     db.commit()
     return response(status=status.HTTP_200_OK,message=PASSWORD_RESET_SUCCESS)
 ```
+
+**Get user by id**: <br>
+Create an api end-point that must return the logged in user's detail. If you are not able to access this api then your access token is expired and you need to get a new access token. <br>
+```
+from fastapi import FastAPI, status, Depends
+
+#utilities
+from utility.common_response import response
+#import success messages from utility
+from utility.common_success_messages import (
+   DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS, OTP_VERIFICATION_SUCCESS, MAIL_SENT_SUCCESS, PASSWORD_RESET_SUCCESS
+)
+#import error messages from utility
+from utility.common_error_messages import (
+   DATA_SENT_ERR , DATA_INSERT_ERR, DATA_NOT_FOUND_ERR, DATA_UPDATE_ERR, DATA_SOFT_DELETE_ERR, DATA_RESTORE_ERR, DATA_HARD_DELETE_ERR, OTP_VERIFICATION_ERR, MAIL_SENT_ERR, USER_ACTIAVTED_ERR, PASSWORD_MATCH_ERR
+)
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+#import query operation functions from sql alchemy
+from sqlalchemy import desc
+
+#make url parameters optional
+from typing import Optional
+#usae pydantic model to define the structure of the data that is to be inserted in the api end-point
+from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, SoftDeleteRestorePostsModel, RatingPostsModel
+from pydantic_custom_models.Users import CreateUpdateUserModel, BlockUnblockUsersModel, SoftDeleteRestoreUserModel, VerifyOTPUsersModel, ResendOtp, RequestResetPasswordModel, ResetPasswordModel
+
+#import a utility that hashes user password
+from utility.hash_password import hash_pass_fun, hash_reset_pass_fun
+
+#Email related imports
+from utility.send_mail import send_email_async, send_email_background
+from fastapi import BackgroundTasks
+from random import randint
+
+app = FastAPI()
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+@app.get('/users/{id}')
+def get_user_details(id : int, db : Session = Depends(db_flush)):
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_deleted == False).first()
+    if not user:
+        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    response_data = {
+        'id':user.id,
+        'email':user.email,
+        'is_deleted':user.is_deleted,
+        'is_blocked':user.is_blocked,
+        'created_at':user.created_at
+    }
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=response_data)
+```
