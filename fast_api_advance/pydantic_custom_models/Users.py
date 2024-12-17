@@ -20,3 +20,11 @@ class VerifyOTPUsersModel(BaseModel):
 
 class ResendOtp(BaseModel):
     id : int
+
+class RequestResetPasswordModel(BaseModel):
+    email : EmailStr
+
+class ResetPasswordModel(BaseModel):
+    id: int
+    password : str
+    password2 : str

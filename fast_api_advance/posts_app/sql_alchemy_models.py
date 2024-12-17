@@ -22,6 +22,7 @@ class UserMaster(Base):
     password = Column(String,nullable=False,)
     is_deleted = Column(Boolean,nullable=False,server_default="false")
     is_blocked = Column(Boolean,nullable=False,server_default="true")
+    verify_otp = Column(Boolean,nullable=False,server_default="false")
     created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
     account_activation_otp = Column(Integer, nullable=True, server_default=text("0"))
 
