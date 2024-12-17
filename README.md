@@ -5748,3 +5748,7 @@ def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     return response(status=status.HTTP_200_OK,message=DATA_HARD_DELETE_SUCCESS)       
 ```
 ![image info](fast_api_advance/images/readme_images/api-groups-swagger.png)
+
+# JWT Token Authentication 
+JWT authentication is stateless i.e There is nothing in our database that keeps track of logged in users and logged out users. The JWT tokens are actually stored in our client or in our front-end and whenever an api is hit the client will have to send a token along with it so that the back-end knows that this user is logged in or not.
+![image info](fast_api_advance/images/readme_images/JWT-token_auth.png)
