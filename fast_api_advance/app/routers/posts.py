@@ -29,7 +29,8 @@ from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, Sof
 
 
 router = APIRouter(
-    prefix="/posts"
+    prefix="/posts",
+    tags = ['Posts']
 )
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)

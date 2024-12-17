@@ -35,7 +35,8 @@ from fastapi import BackgroundTasks
 from random import randint
 
 router = APIRouter(
-    prefix="/users"
+    prefix="/users",
+    tags = ['Users']
 )
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
