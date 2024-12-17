@@ -28,12 +28,14 @@ from pydantic_custom_models.Posts import InsertPostsModel, UpdatePostsModel, Sof
 
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/posts"
+)
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 #Create a post
-@router.post('/post')
+@router.post('/')
 def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     new_post = sql_alchemy_models.posts_sql_alchemy_table(
         **post.model_dump()
@@ -46,7 +48,7 @@ def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     return response(status=status.HTTP_201_CREATED,message=DATA_INSERT_SUCCESS,data=new_post)
 
 #get all rows from the table using sql alchemy
-@router.get('/posts',)
+@router.get('/',)
 def get_all_posts(db:Session=Depends(db_flush)):
     # This is gonna grab every single entry withing the posts_sql_alchemy_table
     # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
@@ -56,7 +58,7 @@ def get_all_posts(db:Session=Depends(db_flush)):
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=posts)
 
 #get one row from the table using sql alchemy
-@router.get('/posts/{id}',)
+@router.get('/{id}',)
 def get_one_post(id:int, db: Session = Depends(db_flush)):
     post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id).first()
     if not post:
@@ -64,7 +66,7 @@ def get_one_post(id:int, db: Session = Depends(db_flush)):
     return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=post)
 
 #Update post
-@router.patch('/posts/{id}')
+@router.patch('/{id}')
 def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_flush)):
     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
     post = post_query.first()
@@ -75,7 +77,7 @@ def update_post(id:int,postModel : UpdatePostsModel ,db: Session = Depends(db_fl
     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
 # Update rating of a post
-@router.patch('/post/rate-posts/{id}')
+@router.patch('/rate-posts/{id}')
 def rate_post(id:int, PostModel : RatingPostsModel,db:Session = Depends(db_flush)):
     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
     post = post_query.first()
@@ -86,7 +88,7 @@ def rate_post(id:int, PostModel : RatingPostsModel,db:Session = Depends(db_flush
     return response(status=status.HTTP_200_OK,message=DATA_UPDATE_SUCCESS,data=post_query.first())
 
 #Soft delete or restore posts
-@router.patch('/posts/soft-delete-or-restore/{id}')
+@router.patch('/soft-delete-or-restore/{id}')
 def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db : Session = Depends(db_flush)):
     post_query = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(sql_alchemy_models.posts_sql_alchemy_table.id == id)
     post = post_query.first()
@@ -101,7 +103,7 @@ def soft_delete_or_restore(id:int, PostModel : SoftDeleteRestorePostsModel, db :
     return response(status=status.HTTP_200_OK,message=DATA_RESTORE_SUCCESS,data=post_query.first())
 
 #Hard delete post
-@router.delete('/post/{id}')
+@router.delete('/{id}')
 def hard_delete_post(id:int, db: Session = Depends(db_flush)):
     existing_post = db.query(sql_alchemy_models.posts_sql_alchemy_table).filter(
         sql_alchemy_models.posts_sql_alchemy_table.id == id

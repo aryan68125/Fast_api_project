@@ -34,12 +34,14 @@ from utility.send_mail import send_email_async, send_email_background
 from fastapi import BackgroundTasks
 from random import randint
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/users"
+)
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 #Create a user in a database table
-@router.post('/users/register')
+@router.post('/register')
 def create_users(userModel : CreateUpdateUserModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
     try:
        # before we create the user we need to create the hash of the password
@@ -85,7 +87,7 @@ def create_users(userModel : CreateUpdateUserModel, background_tasks : Backgroun
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR,error=e)
 
 #verify otp that's sent to the user
-@router.patch('/users/verify-otp')
+@router.patch('/verify-otp')
 def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
     try:
         otp_dict = otpModel.model_dump()
@@ -118,7 +120,7 @@ def verify_otp(otpModel : VerifyOTPUsersModel, db : Session = Depends(db_flush))
         return response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, error=str(e))
 
 #Resend otp to the user if requested by them
-@router.patch('/users/send-mail/resend-otp/')
+@router.patch('/send-mail/resend-otp/')
 def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,db : Session = Depends(db_flush)):
     resend_otp_dict = resend_otp_model.model_dump()
     user_pk = resend_otp_dict.get('id')
@@ -161,7 +163,7 @@ def resend_otp(resend_otp_model : ResendOtp, background_tasks : BackgroundTasks,
     return response(status=status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
 
 # Request a password change for the users whose account is activated
-@router.patch('/users/send-mail/request-reset-password')
+@router.patch('/send-mail/request-reset-password')
 def request_reset_password(request_reset_password_model : RequestResetPasswordModel, background_tasks : BackgroundTasks, db : Session = Depends(db_flush)):
     request_reset_password_dictionary = request_reset_password_model.model_dump()
     email = request_reset_password_dictionary.get('email')
@@ -192,7 +194,7 @@ def request_reset_password(request_reset_password_model : RequestResetPasswordMo
     return response(status = status.HTTP_200_OK,message=MAIL_SENT_SUCCESS,data=response_data)
 
 # Verify the otp generated for reset password
-@router.patch('/users/verify-otp/reset-password')
+@router.patch('/verify-otp/reset-password')
 def verify_otp_reset_password(reset_password_model : VerifyOTPUsersModel, db : Session = Depends(db_flush)):
     reset_password_dict = reset_password_model.model_dump()
     id = reset_password_dict.get('id')
@@ -208,7 +210,7 @@ def verify_otp_reset_password(reset_password_model : VerifyOTPUsersModel, db : S
     return response(status=status.HTTP_200_OK,message=OTP_VERIFICATION_SUCCESS)
 
 # After otp verification allow user to reset his account's password
-@router.patch('/users/reset-password')
+@router.patch('/reset-password')
 def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depends(db_flush)):
     reset_password_model_dict = reset_password_model.model_dump()
     id = reset_password_model_dict.get('id')
@@ -227,7 +229,7 @@ def reset_password(reset_password_model : ResetPasswordModel, db:Session = Depen
 
 # Create an api end-point that must return the logged in user's detail 
 # If you are not able to access this api then your access token is expired and you need to get a new access token.
-@router.get('/users/{id}')
+@router.get('/{id}')
 def get_user_details(id : int, db : Session = Depends(db_flush)):
     user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.id == id, sql_alchemy_models.UserMaster.is_deleted == False).first()
     if not user:
