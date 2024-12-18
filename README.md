@@ -5771,6 +5771,17 @@ JWT authentication is stateless i.e There is nothing in our database that keeps 
 Explaination : Follow this link for explaination of the diagram
 ```https://youtu.be/BN9xKkzC55I?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=543``` <br>
 
+## Logging in user :
+![image info](fast_api_advance/images/readme_images/login.png) <br>
+- **How to handle loggin in the user?** : 
+    - So the user is going to hit the login api end-point and he is going to provide the email and the password.
+    - The password that the user provides is in string form. 
+    - So the first thing we have to do when the user hit the api , we have to get the user from the database using the email since email field is unique in the table that's just going to work similar to a primary key in the table, and we can get the data of the user easily.
+    - The database is going to send back all of the info related to the user including the hashed password associated with that user account.
+    - As you can see that the password we are getting from the front-end is in string (simple text) but the password for the user that we are getting from the database is in hashed format. So how do we verify that the password that we are getting from the front-end is the same that is stored in the database or not.
+    - Since we can't convert a hashed password back into a regular simple text string (i.e the original password) because hashing is a one way operation.
+    - We have to hash the password coming from the front-end and then match the hashed password that we get from the front-end and the hashed password that we get from the database if the two hashed password matches then the password is correct otherwise not.
+    - If the password provided by the front-end is correct then we will create a token and then send it back to the user.
 
 
 
