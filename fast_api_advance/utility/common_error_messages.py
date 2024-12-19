@@ -14,3 +14,5 @@ MAIL_SENT_ERR = "Mail could not be sent!"
 USER_ACTIAVTED_ERR = "User account is already activated"
 PASSWORD_MATCH_ERR = "Password do not match!"
 PASSWORD_RESET_ERR = "Password reset failed!"
+
+INVALID_CREDS_ERR = "Invalid credentials!"

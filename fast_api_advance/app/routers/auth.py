@@ -13,7 +13,7 @@ from pydantic_custom_models.Auth import LoginModel
 from utility.hash_password import hash_reset_pass_fun as hash_password
 
 #import error message utils
-from utility.common_error_messages import PASSWORD_MATCH_ERR,DATA_NOT_FOUND_ERR
+from utility.common_error_messages import PASSWORD_MATCH_ERR,DATA_NOT_FOUND_ERR, INVALID_CREDS_ERR
 
 #import success message utils 
 from utility.common_success_messages import LOGIN_SUCCESS
@@ -38,7 +38,7 @@ def login_user(login_model : LoginModel, db : Session = Depends(db_flush)):
     password = login_dict.get("password")
     hashed_password = hash_password(password)
     if not user:
-        return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+        return response(status=status.HTTP_404_NOT_FOUND,error=INVALID_CREDS_ERR)
     print(f"password_f : {hashed_password}")
     print(f"password_db : {user.password}")
     if hashed_password != user.password:
