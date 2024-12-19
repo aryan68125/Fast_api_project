@@ -242,8 +242,4 @@ def get_user_details(id : int, db : Session = Depends(db_flush)):
         'is_blocked':user.is_blocked,
         'created_at':user.created_at
     }
-    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=response_data)
-
-# Login user
-
-# Logout user     
+    return response(status=status.HTTP_200_OK,message=DATA_SENT_SUCCESS,data=response_data)   
