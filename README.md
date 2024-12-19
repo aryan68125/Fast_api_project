@@ -5782,6 +5782,7 @@ Explaination : Follow this link for explaination of the diagram
     - Since we can't convert a hashed password back into a regular simple text string (i.e the original password) because hashing is a one way operation.
     - We have to hash the password coming from the front-end and then match the hashed password that we get from the front-end and the hashed password that we get from the database if the two hashed password matches then the password is correct otherwise not.
     - If the password provided by the front-end is correct then we will create a token and then send it back to the user.
+    
 
 
 
