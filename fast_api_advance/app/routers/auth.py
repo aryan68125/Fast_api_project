@@ -10,7 +10,7 @@ from .. import sql_alchemy_models
 from pydantic_custom_models.Auth import LoginModel
 
 #import password hashing function
-from utility.hash_password import hash_pass_fun as hash_password
+from utility.hash_password import hash_reset_pass_fun as hash_password
 
 #import error message utils
 from utility.common_error_messages import PASSWORD_MATCH_ERR,DATA_NOT_FOUND_ERR
@@ -20,6 +20,9 @@ from utility.common_success_messages import LOGIN_SUCCESS
 
 #import generate token function
 from utility.generate_token import generate_auth_token
+
+#import response from common_response
+from utility.common_response import response
 
 router = APIRouter(
     prefix="/auth",
@@ -36,6 +39,8 @@ def login_user(login_model : LoginModel, db : Session = Depends(db_flush)):
     hashed_password = hash_password(password)
     if not user:
         return response(status=status.HTTP_404_NOT_FOUND,error=DATA_NOT_FOUND_ERR)
+    print(f"password_f : {hashed_password}")
+    print(f"password_db : {user.password}")
     if hashed_password != user.password:
         return response(status=status.HTTP_400_BAD_REQUEST,error=PASSWORD_MATCH_ERR)
     generated_token = generate_auth_token(user)
