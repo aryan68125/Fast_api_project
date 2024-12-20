@@ -41,6 +41,11 @@ def login_user(login_model : LoginModel, db : Session = Depends(db_flush)):
     if_password_matched = verify_hash_password(login_dict.get("password"), user.password)
     if not if_password_matched:
         return response(status=status.HTTP_400_BAD_REQUEST,error=PASSWORD_MATCH_ERR)
-    generated_token = generate_auth_token(user)
+    user_data = {
+        "id":user.id,
+        "email":user.email,
+        "password":user.password
+    }
+    generated_token = generate_auth_token(user_data)
     return response(status=status.HTTP_200_OK,message=LOGIN_SUCCESS,data=generated_token)
     
