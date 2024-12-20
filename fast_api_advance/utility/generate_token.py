@@ -59,4 +59,6 @@ def verify_access_token(token:str,credentials_exception):
 This function could be passed into the Path operations or our FastAPI end-point as a Dependency.
 This function will be used to get the get the user from the token that we get from the front-end after validating the token.
 '''
-def get_current_user()
+def get_current_user():
+    """start video from here"""
+    '''https://youtu.be/bDHtmflqZ4w?list=PL8VzFQ8k4U1L5QpSapVEzoSfob-4CR8zM&t=511'''
