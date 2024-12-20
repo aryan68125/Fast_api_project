@@ -5834,6 +5834,7 @@ def verify_hash_password(password,hashed_password):
     return pwd_context.verify(password, hashed_password)
 ```
 This file is responsible for verifying if the password sent from the front-end client during the login process of the user matches with the hashed password saved in the database after hashing the password from the front-end. <br>
+### Without using python-jose
 **generate_token.py file:** <br>
 ```
 import jwt
