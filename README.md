@@ -5954,6 +5954,7 @@ user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMas
 ```
 This is how the swagger UI should look like after implementing the above changes. <br>
 ![image info](fast_api_advance/images/readme_images/OAuth2PasswordRequestForm_implementation.png) <br>
+So Essentially what's happening here is that we have to send data in form data instead of body. <br>
 
 **main.py file:** <br>
 ```
