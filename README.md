@@ -5880,6 +5880,7 @@ def generate_auth_token(user: dict):
     return token_data
 ```
 Before implementing function that generate access and refresh tokens you need to make sure that you have installed these two libraries ```jwt``` and ```secrets``` <br>
+You just have to use ```secrets.token_urlsafe(50)``` to generate secret key that are randomly generated and will be used in generating access and refresh tokens in jwt later on.
 
 **Auth.py file:** <br>
 ```
