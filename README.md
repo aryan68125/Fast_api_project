@@ -5983,5 +5983,7 @@ app.include_router(auth.router)
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 ``` 
-
-
+## Verifying the access token :
+**pydantic model:** <br>
+```
+```

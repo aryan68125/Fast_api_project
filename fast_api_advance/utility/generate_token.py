@@ -39,3 +39,24 @@ def generate_auth_token(user: dict):
         "refresh_token": refresh_token,
     }
     return token_data
+
+'''
+This function is used to verify the access token that we get from the front-end and if the token is invalid then it will raise and exception.
+'''
+from pydantic_custom_models.Token import TokenData
+def verify_access_token(token:str,credentials_exception):
+    try:
+        payload = jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
+        id = payload.get('id')
+        if id is None:
+            raise credentials_exception
+        token_data = TokenData(id=id)
+    except Exception as e:
+        print(f"verify_access_token : {e}")
+        return credentials_exception
+
+'''
+This function could be passed into the Path operations or our FastAPI end-point as a Dependency.
+This function will be used to get the get the user from the token that we get from the front-end after validating the token.
+'''
+def get_current_user()
