@@ -5781,8 +5781,142 @@ Explaination : Follow this link for explaination of the diagram
     - As you can see that the password we are getting from the front-end is in string (simple text) but the password for the user that we are getting from the database is in hashed format. So how do we verify that the password that we are getting from the front-end is the same that is stored in the database or not.
     - Since we can't convert a hashed password back into a regular simple text string (i.e the original password) because hashing is a one way operation.
     - We have to hash the password coming from the front-end and then match the hashed password that we get from the front-end and the hashed password that we get from the database if the two hashed password matches then the password is correct otherwise not.
-    - If the password provided by the front-end is correct then we will create a token and then send it back to the user.
-    
+    - If the password provided by the front-end is correct then we will create a token and then send it back to the user. <br>
 
+**Implementation :** <br>
+**Pydantic model:** <br>
+```
+from pydantic import EmailStr, BaseModel, Field
+
+class LoginModel(BaseModel):
+    email : EmailStr
+    password : str
+```
+**sql alchemy model:** <br>
+```
+from database_handler.sql_alchemy_db_handler import Base
+from sqlalchemy import Column, Integer, String, DateTime, Text,Boolean, ForeignKey, text
+from sqlalchemy.sql import func
+from sqlalchemy.schema import FetchedValue
+
+class UserMaster(Base):
+    __tablename__ = "user_master"
+    id = Column(Integer, primary_key=True,nullable=False)
+    email = Column(String,nullable=False, unique=True)
+    password = Column(String,nullable=False,)
+    is_deleted = Column(Boolean,nullable=False,server_default="false")
+    is_blocked = Column(Boolean,nullable=False,server_default="true")
+    verify_otp = Column(Boolean,nullable=False,server_default="false")
+    created_at = Column(DateTime,nullable=False,default = func.now(), server_default=func.now())
+    account_activation_otp = Column(Integer, nullable=True, server_default=text("0"))
+```
+**Hash.py file:** <br>
+```
+#import user password encryption libraries
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_pass_fun(UserModel):
+    hashed_password = pwd_context.hash(UserModel.password)
+    UserModel.password = hashed_password
+    return UserModel
+
+def hash_reset_pass_fun(password: str):
+    hashed_password = pwd_context.hash(password)
+    return hashed_password
+
+def verify_hash_password(password,hashed_password):
+    return pwd_context.verify(password, hashed_password)
+```
+Explaination : <br>
+```
+def verify_hash_password(password,hashed_password):
+    return pwd_context.verify(password, hashed_password)
+```
+This file is responsible for verifying if the password sent from the front-end client during the login process of the user matches with the hashed password saved in the database after hashing the password from the front-end. <br>
+**generate_token.py file:** <br>
+```
+def generate_auth_token(user):
+    #make sure that you return a python dict
+    random_token = 2356789
+    print(f"generate_auth_token : {random_token}")
+    return {'refresh_token': random_token,'access_token':"daidabawabidb"}
+```
+We have still not implemented to generate a token right now.
+**Auth.py file:** <br>
+```
+from fastapi import APIRouter ,Depends,status
+
+#import sql alchemy database handler
+from database_handler.sql_alchemy_db_handler import Base, db_flush,db_engine
+from sqlalchemy.orm import Session
+#import sql alchemy models
+from .. import sql_alchemy_models
+
+# import pydantic model 
+from pydantic_custom_models.Auth import LoginModel
+
+#import password hashing function
+from utility.hash_password import hash_reset_pass_fun, verify_hash_password
+
+#import error message utils
+from utility.common_error_messages import PASSWORD_MATCH_ERR,DATA_NOT_FOUND_ERR, INVALID_CREDS_ERR
+
+#import success message utils 
+from utility.common_success_messages import LOGIN_SUCCESS
+
+#import generate token function
+from utility.generate_token import generate_auth_token
+
+#import response from common_response
+from utility.common_response import response
+
+router = APIRouter(
+    prefix="/auth",
+    tags=["User Authentication"]
+)
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+
+@router.post("/login")
+def login_user(login_model : LoginModel, db : Session = Depends(db_flush)):
+    login_dict = login_model.model_dump()
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_dict.get("email")).first()
+    
+    if not user:
+        return response(status=status.HTTP_404_NOT_FOUND,error=INVALID_CREDS_ERR)
+    if_password_matched = verify_hash_password(login_dict.get("password"), user.password)
+    if not if_password_matched:
+        return response(status=status.HTTP_400_BAD_REQUEST,error=PASSWORD_MATCH_ERR)
+    generated_token = generate_auth_token(user)
+    return response(status=status.HTTP_200_OK,message=LOGIN_SUCCESS,data=generated_token)
+```
+**main.py file:** <br>
+```
+from fastapi import FastAPI, status, Depends
+
+
+#import sql alchemy model
+from . import sql_alchemy_models
+#import sql alchemy database engine
+from database_handler.sql_alchemy_db_handler import db_engine, SessionLocal, db_flush
+#import session from sql alchemy
+from sqlalchemy.orm import Session
+
+
+#import routers
+from .routers import posts, users, auth
+
+app = FastAPI()
+
+#routes that handles all the posts
+app.include_router(posts.router)
+#routes that handles all the users
+app.include_router(users.router)
+#routes that handles all user authentications
+app.include_router(auth.router)
+
+sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
+```
 
 
