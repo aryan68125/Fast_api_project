@@ -10,3 +10,6 @@ def hash_pass_fun(UserModel):
 def hash_reset_pass_fun(password: str):
     hashed_password = pwd_context.hash(password)
     return hashed_password
+
+def verify_hash_password(password,hashed_password):
+    return pwd_context.verify(password, hashed_password)

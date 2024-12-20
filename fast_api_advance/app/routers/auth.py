@@ -10,7 +10,7 @@ from .. import sql_alchemy_models
 from pydantic_custom_models.Auth import LoginModel
 
 #import password hashing function
-from utility.hash_password import hash_reset_pass_fun as hash_password
+from utility.hash_password import hash_reset_pass_fun, verify_hash_password
 
 #import error message utils
 from utility.common_error_messages import PASSWORD_MATCH_ERR,DATA_NOT_FOUND_ERR, INVALID_CREDS_ERR
@@ -35,13 +35,11 @@ sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 def login_user(login_model : LoginModel, db : Session = Depends(db_flush)):
     login_dict = login_model.model_dump()
     user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_dict.get("email")).first()
-    password = login_dict.get("password")
-    hashed_password = hash_password(password)
+    
     if not user:
         return response(status=status.HTTP_404_NOT_FOUND,error=INVALID_CREDS_ERR)
-    print(f"password_f : {hashed_password}")
-    print(f"password_db : {user.password}")
-    if hashed_password != user.password:
+    if_password_matched = verify_hash_password(login_dict.get("password"), user.password)
+    if not if_password_matched:
         return response(status=status.HTTP_400_BAD_REQUEST,error=PASSWORD_MATCH_ERR)
     generated_token = generate_auth_token(user)
     return response(status=status.HTTP_200_OK,message=LOGIN_SUCCESS,data=generated_token)
