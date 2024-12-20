@@ -24,6 +24,9 @@ from utility.generate_token import generate_auth_token
 #import response from common_response
 from utility.common_response import response
 
+# This allows us to retrieve the user's credetials using this FastAPI utility instead of recieving them in the body
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+
 router = APIRouter(
     prefix="/auth",
     tags=["User Authentication"]
@@ -32,13 +35,12 @@ router = APIRouter(
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 @router.post("/login")
-def login_user(login_model : LoginModel, db : Session = Depends(db_flush)):
-    login_dict = login_model.model_dump()
-    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_dict.get("email")).first()
+def login_user(login_model : OAuth2PasswordRequestForm = Depends(), db : Session = Depends(db_flush)):
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_model.username).first()
     
     if not user:
         return response(status=status.HTTP_404_NOT_FOUND,error=INVALID_CREDS_ERR)
-    if_password_matched = verify_hash_password(login_dict.get("password"), user.password)
+    if_password_matched = verify_hash_password(login_model.password, user.password)
     if not if_password_matched:
         return response(status=status.HTTP_400_BAD_REQUEST,error=PASSWORD_MATCH_ERR)
     user_data = {

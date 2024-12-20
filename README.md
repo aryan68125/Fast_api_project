@@ -5909,6 +5909,9 @@ from utility.generate_token import generate_auth_token
 #import response from common_response
 from utility.common_response import response
 
+# This allows us to retrieve the user's credetials using this FastAPI utility instead of recieving them in the body
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+
 router = APIRouter(
     prefix="/auth",
     tags=["User Authentication"]
@@ -5917,18 +5920,40 @@ router = APIRouter(
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
 
 @router.post("/login")
-def login_user(login_model : LoginModel, db : Session = Depends(db_flush)):
-    login_dict = login_model.model_dump()
-    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_dict.get("email")).first()
+def login_user(login_model : OAuth2PasswordRequestForm = Depends(), db : Session = Depends(db_flush)):
+    user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_model.username).first()
     
     if not user:
         return response(status=status.HTTP_404_NOT_FOUND,error=INVALID_CREDS_ERR)
-    if_password_matched = verify_hash_password(login_dict.get("password"), user.password)
+    if_password_matched = verify_hash_password(login_model.password, user.password)
     if not if_password_matched:
         return response(status=status.HTTP_400_BAD_REQUEST,error=PASSWORD_MATCH_ERR)
-    generated_token = generate_auth_token(user)
+    user_data = {
+        "id":user.id,
+    }
+    generated_token = generate_auth_token(user_data)
     return response(status=status.HTTP_200_OK,message=LOGIN_SUCCESS,data=generated_token)
 ```
+I want to make some small changes in the current login api end-point. Instead of retrieving the user's credentials in the body I want to use the built in utility in the fastAPI. <br>
+The utility is ```OAuth2PasswordRequestForm``` <br>
+This is how to import it : 
+```from fastapi.security.oauth2 import OAuth2PasswordRequestForm```
+Explaination : <br>
+Focus on line ```login_model : OAuth2PasswordRequestForm = Depends()```  <br>
+In this line ```OAuth2PasswordRequestForm``` The email provided by the front-end will be inside the key username remeber this ```OAuth2PasswordRequestForm``` do not have email field in it, it has a username field in it so the client will have to send the email of the user in username field instead of the email field. <br>
+So ```OAuth2PasswordRequestForm``` is going to return username and password. <br>
+```OAuth2PasswordRequestForm``` really doesn't care if the client is sending email, user's primary key or username all these things will be saved inside the username field.
+Instead of this <br>
+```
+user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_dict.get("email")).first()
+```
+You need to use this <br>
+```
+user = db.query(sql_alchemy_models.UserMaster).filter(sql_alchemy_models.UserMaster.email == login_model.username).first()
+```
+This is how the swagger UI should look like after implementing the above changes. <br>
+![image info](fast_api_advance/images/readme_images/OAuth2PasswordRequestForm_implementation.png) <br>
+
 **main.py file:** <br>
 ```
 from fastapi import FastAPI, status, Depends
@@ -5955,6 +5980,6 @@ app.include_router(users.router)
 app.include_router(auth.router)
 
 sql_alchemy_models.Base.metadata.create_all(bind=db_engine)
-```
+``` 
 
 
