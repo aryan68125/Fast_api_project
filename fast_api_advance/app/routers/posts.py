@@ -49,8 +49,10 @@ def create_post(post : InsertPostsModel,db : Session = Depends(db_flush)):
     return response(status=status.HTTP_201_CREATED,message=DATA_INSERT_SUCCESS,data=new_post)
 
 #get all rows from the table using sql alchemy
+from utility import OAuth2
 @router.get('/',)
-def get_all_posts(db:Session=Depends(db_flush)):
+def get_all_posts(db:Session=Depends(db_flush),get_current_user : int = Depends(OAuth2.get_current_user)):
+    print(f"Authenticated user: {get_current_user}")
     # This is gonna grab every single entry withing the posts_sql_alchemy_table
     # posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).all()
     posts = db.query(sql_alchemy_models.posts_sql_alchemy_table).order_by(desc(sql_alchemy_models.posts_sql_alchemy_table.id)).all()
