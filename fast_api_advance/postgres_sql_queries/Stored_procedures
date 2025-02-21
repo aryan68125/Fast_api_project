@@ -1,0 +1,286 @@
+-- STORED PROCEDURES AND FUNCTIONS --
+
+-- INSERT DATA INTO TABLE --
+CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO product (name, price) VALUES (p_name, p_price);
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT insert_product('LED ambient lights', 150);
+
+
+-- READ ALL ENTRIES IN THE TABLE WHOSE HAS IS_DELETED SET TO FALSE --
+CREATE OR REPLACE FUNCTION read_all_products()
+RETURNS TABLE(id INT, name VARCHAR, price NUMERIC, is_deleted BOOLEAN) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT p.id, p.name, p.price, p.is_deleted
+    FROM product p
+    WHERE p.is_deleted = FALSE;
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT * FROM read_all_products();
+
+
+-- READ ONE ENTRY USING ID IN THE TABLE --
+CREATE OR REPLACE FUNCTION read_one_product(p_id INT)
+RETURNS TABLE (id INT, name VARCHAR, price NUMERIC, is_deleted BOOLEAN) AS $$
+BEGIN
+	RETURN QUERY
+	SELECT p.id, p.name, p.price, p.is_deleted
+    FROM product p
+    WHERE p.is_deleted = FALSE AND p.id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT * FROM read_one_product(10);
+
+-- UPDATE AN ENTRY IN A TABLE --
+CREATE OR REPLACE FUNCTION update_product(p_id INT, p_name VARCHAR, p_price NUMERIC)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE product
+    SET name = p_name, price = p_price
+    WHERE id = p_id AND is_deleted = FALSE;
+END;
+$$ LANGUAGE plpgsql;
+-- usage -- 
+SELECT update_product(8, 'Gaming Laptop', 99600); 
+
+-- SOFT DELETE AN ENTRY FROM A DATABASE TABLE --
+CREATE OR REPLACE FUNCTION delete_product(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE product
+    SET is_deleted = TRUE
+    WHERE id = p_id AND is_deleted = FALSE;
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT delete_product (13)
+
+-- RESTORE AN ENTRY IN A DATABASE TABLE THAT HAS BEEN SOFT DELETED --
+CREATE OR REPLACE FUNCTION restore_product(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+	UPDATE product
+	SET is_deleted = False
+	WHERE id = p_id AND is_deleted = True;
+END;
+$$ LANGUAGE plpgsql
+-- usage --
+SELECT restore_product (13)
+
+-- HARD DELETE AN ENTRY IN A DATABASE TABLE --
+CREATE OR REPLACE FUNCTION hard_delete(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+	DELETE FROM product
+	WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql
+-- usage --
+SELECT hard_delete(13)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- FUNCTIONS THAT PERFORMS CREATE, UPDATE, READ AND DELETE OPERATIONS ALSO RETURNS A SUCCESS OR FAILURE MESSAGE TO THE CALLER --
+DROP FUNCTION insert_product;
+-- insert an entry in the table --
+CREATE OR REPLACE FUNCTION insert_product(p_name VARCHAR, p_price NUMERIC)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to insert the product
+    INSERT INTO product (name, price) VALUES (p_name, p_price);
+
+    -- On success, return a JSON object indicating success
+    result := json_build_object(
+        'status', TRUE,
+        'message', 'Data insert successful!'
+    );
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle any errors and return a JSON object indicating failure
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error inserting product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT insert_product('Water cooler', 35000);
+
+-- UPDATE AN ENTRY IN THE TABLE --
+DROP FUNCTION update_product;
+CREATE OR REPLACE FUNCTION update_product(p_id INTEGER, p_name VARCHAR, p_price NUMERIC)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to update the product
+    UPDATE product
+    SET name = p_name, price = p_price
+    WHERE id = p_id;
+
+    -- Check if any rows were affected
+    IF FOUND THEN
+        result := json_build_object(
+            'status', TRUE,
+            'message', 'Data update successful!'
+        );
+    ELSE
+        result := json_build_object(
+            'status', FALSE,
+            'message', 'No product found with the given ID!'
+        );
+    END IF;
+
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error updating product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT update_product(15,'Front loader washing machine', 45890);
+
+-- SOFT DELETE AN ENTRY FROM THE TABLE DATABASE --
+SELECT * FROM product ORDER BY id ASC	;
+
+DROP FUNCTION delete_product;
+CREATE OR REPLACE FUNCTION delete_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to soft delete the product
+    UPDATE product
+    SET is_deleted = TRUE
+    WHERE id = p_id AND is_deleted = False;
+
+    -- Check if any rows were affected
+    IF FOUND THEN
+        result := json_build_object(
+            'status', TRUE,
+            'message', 'Product soft-deleted successfully!'
+        );
+    ELSE
+        result := json_build_object(
+            'status', FALSE,
+            'message', 'No product found with the given ID!'
+        );
+    END IF;
+
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error soft deleting product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT delete_product(16);
+
+-- RESTORE AN ENTRY FROM THE DATABASE TABLE --
+SELECT * FROM product ORDER BY id ASC	;
+
+DROP FUNCTION restore_product;
+CREATE OR REPLACE FUNCTION restore_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+	result JSON;
+BEGIN
+	UPDATE product
+	SET is_deleted = False
+	WHERE id=p_id AND is_deleted = True;
+
+	IF FOUND THEN
+		result := json_build_object(
+			'status',True,
+			'message','Product restored successfully!'
+		);
+	ELSE
+		result := json_build_object(
+			'status',False,
+			'message','No product found with the given ID!'
+		);
+	
+	END IF;
+	
+	RETURN result;
+
+	EXCEPTION
+
+	WHEN OTHERS THEN
+		RETURN json_build_object(
+			'status',False,
+			'message','Error soft deleting product: ' || SQLERRM
+		);
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT restore_product(16)
+
+-- HARD DELETE AND ENTRY FROM THE TABLE --
+SELECT * FROM product ORDER BY id ASC	;
+
+DROP FUNCTION hard_delete_product;
+CREATE OR REPLACE FUNCTION hard_delete_product(p_id INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Attempt to hard delete the product
+    DELETE FROM product
+    WHERE id = p_id;
+
+    -- Check if any rows were affected
+    IF FOUND THEN
+        result := json_build_object(
+            'status', TRUE,
+            'message', 'Product hard-deleted successfully!'
+        );
+    ELSE
+        result := json_build_object(
+            'status', FALSE,
+            'message', 'No product found with the given ID!'
+        );
+    END IF;
+
+    RETURN result;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', FALSE,
+            'message', 'Error hard deleting product: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+-- usage --
+SELECT hard_delete_product(16);

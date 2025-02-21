@@ -1,0 +1,243 @@
+-- STORED PROCEDURES --
+
+-- INSERT DATA INTO A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE insert_product_sp(p_name VARCHAR, p_price NUMERIC, inventory INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+    -- Try to insert the product
+    INSERT INTO product (name, price, inventory) VALUES (p_name, p_price, inventory);
+    
+    -- Return success message
+    RAISE NOTICE 'success';
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Catch any error and return failure message
+        RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL insert_product_sp('Exhaust fan', 3000, 44);
+SELECT * FROM product ORDER BY id ASC;
+-- DELETE FROM product WHERE id =  26;
+
+
+
+-- UPDATE DATA INTO A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE update_product_sp(p_id INTEGER,p_name VARCHAR, p_price NUMERIC, p_inventory INTEGER, p_is_on_sale BOOLEAN)
+LANGUAGE plpgsql AS $$
+BEGIN
+	UPDATE product SET name = p_name, price = p_price, inventory=p_inventory, is_on_sale=p_is_on_sale
+	WHERE id = p_id AND is_deleted = False;
+	IF FOUND THEN
+		RAISE NOTICE 'success';
+	ELSE
+		RAISE NOTICE 'not found';
+	END IF ;
+EXCEPTION 
+	WHEN OTHERS THEN 
+		RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL update_product_sp(22, 'Hair Drier', 750,250,True)
+SELECT * FROM product ORDER BY id ASC;
+
+
+
+-- SOFT DELETE DATA FROM A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE soft_delete_product_sp(p_id INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+	UPDATE product SET is_deleted = TRUE
+	WHERE id = p_id AND is_deleted = False;
+	IF FOUND THEN 
+		RAISE NOTICE 'success';
+	ELSE
+		RAISE NOTICE 'not found';
+	END IF ;
+EXCEPTION 
+	WHEN OTHERS THEN 
+		RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL soft_delete_product_sp(27);
+SELECT * FROM product ORDER BY id ASC;
+
+
+
+-- RESTORE SOFT DELETED DATA IN A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE retore_data_product_sp(p_id INTEGER)
+LANGUAGE plpgsql AS $$
+BEGIN
+	UPDATE product SET is_deleted = False
+	WHERE id = p_id AND is_deleted = True;
+	IF FOUND THEN
+		RAISE NOTICE 'success';
+	ELSE 
+		RAISE NOTICE 'not found';
+	END IF;
+EXCEPTION 
+	 WHEN OTHERS THEN
+	 	RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL retore_data_product_sp(27);
+SELECT * FROM product ORDER BY id ASC;
+
+
+
+-- HARD DELETE DATA FROM A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE hard_delete_product_sp(p_id INTEGER)
+LANGUAGE plpgsql AS $$
+DECLARE 
+	rows_deleted INTEGER;
+BEGIN
+	DELETE FROM product WHERE id = p_id;
+	
+	GET DIAGNOSTICS rows_deleted = ROW_COUNT;
+
+	IF rows_deleted = 0 THEN
+		RAISE NOTICE 'not found!';
+	ELSE
+		RAISE NOTICE 'success';
+	END IF;
+EXCEPTION 
+	WHEN OTHERS THEN
+		RAISE NOTICE '"%"', SQLERRM;
+END;
+$$;
+-- usage --
+CALL hard_delete_product_sp(25);
+SELECT * FROM product ORDER BY id ASC;
+
+
+
+-- READ ALL DATA FROM A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE read_product_sp(p_id INTEGER DEFAULT NULL)
+LANGUAGE plpgsql AS $$
+DECLARE
+	result JSONB;
+BEGIN
+	IF p_id IS NULL THEN
+		SELECT jsonb_agg(row_to_json(product))
+		INTO result
+		FROM product
+		WHERE is_deleted = False;
+
+		RAISE NOTICE '%', result;
+	ELSE
+		SELECT row_to_json(product)
+		INTO result
+		FROM product
+		WHERE id = p_id AND is_deleted = False;
+
+		IF result IS NULL THEN
+			RAISE NOTICE 'not found!';
+		ELSE
+			RAISE NOTICE '%', result;
+		END IF;
+	END IF;
+EXCEPTION
+	WHEN OTHERS THEN
+		RAISE NOTICE '%', SQLERRM;
+END;
+$$;
+-- usage --
+CALL read_product_sp();
+CALL read_product_sp(9);
+
+
+
+-- SEARCH DATA IN A TABLE STORED PROCEDURE --
+CREATE OR REPLACE PROCEDURE search_product_sp(
+    p_name VARCHAR DEFAULT NULL,
+    p_price NUMERIC DEFAULT NULL,
+    p_created_at TIMESTAMP DEFAULT NULL
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    -- Build dynamic query for searching based on provided parameters
+    IF p_name IS NOT NULL AND p_price IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND price = p_price
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL AND p_price IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND price = p_price
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_price IS NOT NULL AND p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE price = p_price
+          AND created_at = p_created_at
+          AND is_deleted = FALSE;
+
+    ELSIF p_name IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE name ILIKE '%' || p_name || '%'  -- Search by name (case-insensitive)
+          AND is_deleted = FALSE;
+
+    ELSIF p_price IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE price = p_price
+          AND is_deleted = FALSE;
+
+    ELSIF p_created_at IS NOT NULL THEN
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE created_at = p_created_at
+          AND is_deleted = FALSE;
+    ELSE
+        -- If no parameters provided, return all products
+        SELECT jsonb_agg(row_to_json(product))
+        INTO result
+        FROM product
+        WHERE is_deleted = FALSE;
+    END IF;
+
+    -- Return the result
+    RAISE NOTICE '%', result;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle errors
+        RAISE NOTICE 'Error: %', SQLERRM;
+END;
+$$;
+-- usage --
+-- CALL search_product_sp(
+--     p_name VARCHAR DEFAULT NULL,
+--     p_price NUMERIC DEFAULT NULL,
+--     p_created_at TIMESTAMP DEFAULT NULL
+-- )
+CALL search_product_sp(p_price := 156000);
+CALL search_product_sp(p_name := 'hair');
+CALL search_product_sp(p_created_at := '2024-12-05T16:49:14.243054+05:30');
+CALL search_product_sp(p_created_at := '2024-12-06T15:07:01.035663+05:30');
+CALL read_product_sp();

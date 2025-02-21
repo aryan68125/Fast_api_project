@@ -1,0 +1,44 @@
+-- RAW SQL QUERIES --
+
+-- Create a table
+CREATE TABLE product (
+id SERIAL PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
+price NUMERIC NOT NULL,
+is_deleted BOOLEAN DEFAULT FALSE
+);
+
+-- Select all entries in ascending order by id column of the table
+SELECT * FROM product ORDER BY id ASC;
+
+--Create enties in the table
+INSERT INTO product ("name","price","is_deleted","inventory")VALUES
+('Tv','20000.52',True,65),
+('Laptop','80000.52', False,7),
+('Gaming pc','156000', False,3),
+('Ceiling fan','6000.52', False,42),
+('Washing machine','17000.52', False,12),
+('Coffee machine','90000.52', False,9);
+
+--Add a new column to and existing table
+ALTER TABLE product ADD COLUMN	is_on_sale boolean DEFAULT false;
+ALTER TABLE product ADD COLUMN inventory integer DEFAULT 0;
+--Add anew column that stores the current date time in an existing table
+ALTER TABLE product ADD COLUMN created_at TIMESTAMP WITH TIME ZONE;
+UPDATE product SET created_at = CURRENT_TIMESTAMP;
+ALTER TABLE product ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE product ALTER COLUMN created_at SET NOT NULL;
+
+--Update an entry in an existing table
+UPDATE product SET price = 6700 WHERE id = 10;
+
+--Delete a row from the table
+DELETE FROM product WHERE id = 11;
+
+--Truncate table
+TRUNCATE TABLE product
+
+--DELETE table
+DROP TABLE product;
+
+
