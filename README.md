@@ -108,6 +108,9 @@ If the `pg_hba.conf` file is configured for `peer` or `trust` authentication, Po
 
 Now, the `postgres` role will require a password to log in.
 
+**NOTE:** One thng to note is that if you have set the connection type from peer to md5 in ```pg_hba.conf``` file inside this directory ```/etc/postgresql/17/main``` then you can't directly use this ```sudo -u postgres psql``` to get inside postgres terminal you will have to use this ```sudo -i -u postgres``` then put in your username and password for your postgres server user by typing this ```psql -U postgres -W```
+- ``````psql -U postgres -W`````` In this command ```postgres``` is the username signified by the flag ```-U``` and ```-W``` allows you to enter the password for your postgres user in my case it is ```admin```
+
 ### Run server when your main.py file is inside a python package 
 The directory structure looks something like this : 
 ```
