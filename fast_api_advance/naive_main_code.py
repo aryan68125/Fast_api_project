@@ -23,6 +23,7 @@ def get_posts():
     return response(status=200,message="Post Sent!", data=dummy_data)
 
 #post method implementation without pydantic model
+'''Simulation of a post method without a database'''
 @app.post("/create-posts/")
 def create_posts(data: dict = Body(...)):
     print(data)
