@@ -1,9 +1,9 @@
 from fastapi import FastAPI, status
 
 #utilities
-from utility.common_response import response
+from .. utility.common_response import response
 #import success messages from utility
-from utility.common_success_messages import (
+from .. utility.common_success_messages import (
    DATA_SENT_SUCCESS , DATA_INSERT_SUCCESS, DATA_UPDATE_SUCCESS, DATA_SOFT_DELETE_SUCCESS, DATA_RESTORE_SUCCESS, DATA_HARD_DELETE_SUCCESS
 )
 #import error messages from utility
